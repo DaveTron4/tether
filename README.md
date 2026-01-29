@@ -181,9 +181,9 @@ tether/
 | `PORT` | Backend server port | `3000` |
 | `PGHOST` | PostgreSQL host | `localhost` |
 | `PGPORT` | PostgreSQL port | `5432` |
-| `PGDATABASE` | Database name | `tether_db` |
-| `PGUSER` | Database user | `postgres` |
-| `PGPASSWORD` | Database password | - |
+| `PGDATABASE` | Database name | `db_name` |
+| `PGUSER` | Database user | `db_user` |
+| `PGPASSWORD` | Database password | `db_password` |
 
 ## 📝 Development Scripts
 
@@ -225,21 +225,13 @@ npm run build
 # Outputs to frontend/dist
 ```
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
 ## 📄 License
 
 This project is licensed under the ISC License.
 
 ## 👤 Author
 
-**Your Name**
+**David Salas C.**
 
 ---
 
