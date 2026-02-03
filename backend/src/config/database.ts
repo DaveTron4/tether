@@ -9,9 +9,7 @@ const config = {
   host: process.env.PGHOST,
   port: parseInt(process.env.PGPORT || '5432'),
   database: process.env.PGDATABASE,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: false,
 };
 
 export const pool = new pg.Pool(config);

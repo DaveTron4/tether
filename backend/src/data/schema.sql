@@ -37,3 +37,12 @@ CREATE TABLE IF NOT EXISTS payment_history (
 
 -- Index on client_id in payment_history for faster lookups
 CREATE INDEX IF NOT EXISTS idx_payment_history_client_id ON payment_history(client_id);
+
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL, -- Store HASHED password, not plain text
+    role VARCHAR(20) DEFAULT 'employee', -- 'admin' or 'employee'
+    full_name VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
