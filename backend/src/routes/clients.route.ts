@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import clientController from '../controllers/client.controller.js';
+import { isAdmin } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
@@ -11,12 +12,12 @@ router.get('/', clientController.getAllClients);
 router.get('/:id', clientController.getClientById);
 
 // Creates a new client
-router.post('/', clientController.createClient);
+router.post('/', isAdmin as any, clientController.createClient);
 
 // Updates an existing client
-router.put('/:id', clientController.updateClient);
+router.put('/:id', isAdmin as any, clientController.updateClient);
 
 // Deletes a client
-router.delete('/:id', clientController.deleteClient);
+router.delete('/:id', isAdmin as any, clientController.deleteClient);
 
 export default router;

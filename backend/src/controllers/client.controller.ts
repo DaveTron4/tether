@@ -32,10 +32,10 @@ const getClientById = async (req: Request, res: Response) => {
 // Create a new client
 const createClient = async (req: Request, res: Response) => {
   try {
-    const { name, status, nextPayment } = req.body;
+    const {full_name, phone_number, zip_code, notes } = req.body;
     const result = await pool.query(
-      'INSERT INTO clients (name, status, next_payment) VALUES ($1, $2, $3) RETURNING *',
-      [name, status, nextPayment]
+      'INSERT INTO clients (full_name, phone_number, zip_code, notes) VALUES ($1, $2, $3, $4) RETURNING *',
+      [full_name, phone_number, zip_code, notes]
     );
     
     res.status(201).json(result.rows[0]);
@@ -49,11 +49,11 @@ const createClient = async (req: Request, res: Response) => {
 const updateClient = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, status, nextPayment } = req.body;
+    const { full_name, phone_number, zip_code, notes } = req.body;
     
     const result = await pool.query(
-      'UPDATE clients SET name = $1, status = $2, next_payment = $3 WHERE id = $4 RETURNING *',
-      [name, status, nextPayment, id]
+      'UPDATE clients SET full_name = $1, phone_number = $2, zip_code = $3, notes = $4 WHERE id = $5 RETURNING *',
+      [full_name, phone_number, zip_code, notes, id]
     );
     
     if (result.rows.length === 0) {

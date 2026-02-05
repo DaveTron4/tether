@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node ./src/index.js",
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "db:reset": "tsx ./src/config/reset.ts"
   },
   "keywords": [],
   "author": "",
@@ -31,5 +32,10 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
+  },
+  "ts-node": {
+    "esm": true,
+    "experimentalEsm": true,
+    "resolveJsonModule": true
   }
 }
