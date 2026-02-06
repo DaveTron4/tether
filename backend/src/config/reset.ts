@@ -65,7 +65,7 @@ const seedClientsTable = async () => {
 };
 
 // ==========================================
-// 3. SUBSCRIPTIONS (Phone & WiFi Plans) - NEW!
+// 3. SUBSCRIPTIONS (Phone & WiFi Plans)
 // ==========================================
 const createSubscriptionsTable = async () => {
     const query = `

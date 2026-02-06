@@ -77,4 +77,5 @@ const updateSubscription = async (req: Request, res: Response) => {
 export default { 
     getClientSubscriptions, 
     createSubscription, 
-    updateSubscription };
+    updateSubscription 
+};

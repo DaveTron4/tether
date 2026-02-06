@@ -13,3 +13,5 @@ router.post('/', isAdmin as any, subscriptionController.createSubscription);
 
 // Updates a subscription by ID
 router.put('/:id', isAdmin as any, subscriptionController.updateSubscription);
+
+export default router;

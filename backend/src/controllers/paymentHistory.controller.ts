@@ -60,8 +60,7 @@ const getPaymentHistoryById = async (req: Request, res: Response) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Payment history not found' });
         }
-        
-        // Now the result will have "carrier": "T-Mobile" inside it
+
         res.status(200).json(result.rows[0]);
     } catch (err) {
         console.error('Error fetching payment history:', err);
@@ -74,7 +73,6 @@ const createPayment = async (req: Request, res: Response) => {
     try {
         const { subscription_id, amount_paid, status } = req.body;
         
-        // 1. Record the payment
         const result = await pool.query(
             `INSERT INTO payment_history (subscription_id, amount_paid, status)
              VALUES ($1, $2, $3)
@@ -82,7 +80,6 @@ const createPayment = async (req: Request, res: Response) => {
             [subscription_id, amount_paid, status]
         );
 
-        // 2. OPTIONAL: Update the subscription 'last_payment_at' automatically
         if (status === 'Paid') {
             await pool.query(
                 `UPDATE subscriptions SET last_payment_at = NOW(), status = 'Paid' WHERE id = $1`,
