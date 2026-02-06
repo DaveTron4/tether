@@ -8,6 +8,7 @@ import paymentHistoryRoutes from './paymentHistory.route.js';
 import subscriptionRoutes from './subscription.route.js';
 import productRouter from './product.route.js';
 import repairRoutes from './repair.route.js';
+import saleRoutes from './sale.route.js';
 
 const router = Router();
 
@@ -29,6 +30,9 @@ router.use('/products', verifyToken as any, productRouter);
 
 // Repair routes
 router.use('/repairs', verifyToken as any, repairRoutes);
+
+// Sale routes
+router.use('/sales', verifyToken as any, saleRoutes);
 
 // Health check route
 router.get('/health', (req, res) => {

@@ -2,6 +2,8 @@ import type { Request, Response } from 'express';
 import { pool } from '../config/database.js';
 
 // Controller functions for managing clients
+
+// Get all clients
 const getAllClients = async (req: Request, res: Response) => {
   try {
     const result = await pool.query('SELECT * FROM clients ORDER BY id ASC');
