@@ -3,8 +3,6 @@ import type { Request, Response, NextFunction } from 'express';
 import type { AuthRequest } from '../models/authRequest.interface.js';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
 // The Token Verifier
 export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
   const rawAuthHeader = (req.get && req.get('authorization')) || req.headers['authorization'];
@@ -16,6 +14,9 @@ export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction)
   }
 
   try {
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) return res.status(500).json({ error: 'Server misconfigured: JWT secret missing' });
+    
     const decoded = jwt.verify(token, JWT_SECRET) as any;
     req.user = decoded;
     next(); 

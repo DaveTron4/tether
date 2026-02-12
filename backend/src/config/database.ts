@@ -1,9 +1,4 @@
 import pg from 'pg';
-import dotenv from 'dotenv';
-import path from 'path';
-
-// Load environment from repository root (one level above `backend`)
-dotenv.config({ path: path.resolve(process.cwd(), '..', '.env') });
 
 const config = {
   user: process.env.PGUSER,

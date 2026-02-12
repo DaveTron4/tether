@@ -3,10 +3,8 @@ import { pool } from '../config/database.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
-
 // Controller functions for authentication
+
 // User login
 const login = async (req: Request, res: Response) => {
     try {
@@ -29,6 +27,9 @@ const login = async (req: Request, res: Response) => {
         }  
 
         const tokenPayload = { id: user.id, username: user.username, role: user.role };
+        const JWT_SECRET = process.env.JWT_SECRET;
+        if (!JWT_SECRET) return res.status(500).json({ error: 'Server misconfigured: JWT secret missing' });
+        const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
 
         const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
         return res.json({ 

@@ -1,11 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import path from 'path';
 import routes from './routes/index.route.js';
 
-// Load environment from repository root (one level above `backend`)
-dotenv.config({ path: path.resolve(process.cwd(), '..', '.env') });
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -29,6 +27,19 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/api', routes);
+
+// 404 for unknown routes
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not Found' });
+});
+
+// centralized error handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err); // keep server-side logs, avoid leaking stack to clients in production
+  const status = err.status || 500;
+  const message = process.env.NODE_ENV === 'production' ? 'Internal Server Error' : (err.message || 'Internal Server Error');
+  res.status(status).json({ error: message });
+});
 
 // Start server
 app.listen(PORT, () => {
