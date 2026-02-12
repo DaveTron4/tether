@@ -33,8 +33,8 @@ tether/
 │   │   ├── controllers/  # Business logic
 │   │   ├── routes/   # API routes
 │   │   └── data/     # Database schema
-│   └── .env         # Environment variables (not committed)
 └── README.md        # This file
+└── .env             # Environment variables (repo root, not committed)
 ```
 
 ## 🛠️ Tech Stack
@@ -55,7 +55,6 @@ tether/
 ### DevOps & Tools
 - **Nodemon** - Auto-reload dev server
 - **tsx** - TypeScript executor
-- **Playwright** - End-to-end testing
 
 ## 🚀 Getting Started
 
@@ -75,9 +74,6 @@ tether/
 
 2. **Install dependencies**
    ```bash
-   # Install root dependencies (Playwright)
-   npm install
-
    # Install backend dependencies
    cd backend
    npm install
@@ -128,7 +124,7 @@ Notes:
 
 4. **Configure Environment Variables**
 
-   Create `backend/.env`:
+   Create `.env` in the project root (not committed):
    ```env
    PORT=3000
 
@@ -139,7 +135,7 @@ Notes:
    PGPASSWORD=your_password_here
    ```
 
-   See `backend/.env.example` for all available options.
+   See `env.example` for all available options.
 
 5. **Run the Application**
 
@@ -232,10 +228,7 @@ npm test         # Run tests
 
 ## 🧪 Testing
 
-Run Playwright tests:
-```bash
-npm run test:playwright
-```
+No automated end-to-end tests are included in this repository.
 
 ## 📦 Build for Production
 
