@@ -1,8 +1,11 @@
 import dotenv from 'dotenv';
-dotenv.config();
+import path from 'path';
 
-import {pool} from './database.js'
+// Ensure we load the repository root .env (project root is one level above `backend`)
+dotenv.config({ path: path.resolve(process.cwd(), '..', '.env') });
+
 import bcrypt from 'bcrypt';
+const { pool } = await import('./database.js');
 
 // Safety Check: Prevent running in production
 if (process.env.NODE_ENV === 'production') {

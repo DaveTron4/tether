@@ -1,9 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import routes from './routes/index.route.js';
 
-dotenv.config();
+// Load environment from repository root (one level above `backend`)
+dotenv.config({ path: path.resolve(process.cwd(), '..', '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3000;

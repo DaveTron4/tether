@@ -10,7 +10,11 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
 // User login
 const login = async (req: Request, res: Response) => {
     try {
-        const { username, password } = req.body;
+        const { username, password } = req.body || {};
+
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Missing username or password in request body' });
+        }
         const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
 
         if (result.rows.length === 0) {
@@ -42,7 +46,11 @@ const login = async (req: Request, res: Response) => {
 // User registration
 const register = async (req: Request, res: Response) => {
     try {
-        const { username, password, fullName } = req.body;
+        const { username, password, fullName } = req.body || {};
+
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Missing username or password in request body' });
+        }
 
         const userCheck = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
         if (userCheck.rows.length > 0) {

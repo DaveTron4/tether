@@ -7,8 +7,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // The Token Verifier
 export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.get('authorization');
-  const token = authHeader && authHeader.split(' ')[1];
+  const rawAuthHeader = (req.get && req.get('authorization')) || req.headers['authorization'];
+  const authHeader = typeof rawAuthHeader === 'string' ? rawAuthHeader : Array.isArray(rawAuthHeader) ? rawAuthHeader[0] : undefined;
+  const token = authHeader?.split(' ')[1];
 
   if (!token) {
     return res.status(401).json({ error: 'Access denied. No token provided.' });
