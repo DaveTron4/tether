@@ -87,16 +87,44 @@ tether/
    npm install
    ```
 
-3. **Set up PostgreSQL Database**
-   ```bash
-   # Create database
-   psql -U postgres
-   CREATE DATABASE tether_db;
-   \q
+3. **Set up PostgreSQL Database (Docker)**
 
-   # Run schema
-   psql -U postgres -d tether_db -f backend/src/data/schema.sql
+This project runs PostgreSQL inside Docker (see `docker-compose.yml`). The compose file defines a `db` service (container name `tether_db`) and maps the container port `5432` to the host port defined in your `.env` (`PGPORT`, default `5432`).
+
+Quick steps:
+
+- Ensure the repository root `.env` contains the DB settings (example values):
+   ```env
+   PGHOST=localhost
+   PGPORT=5432
+   PGDATABASE=tether_db
+   PGUSER=david
+   PGPASSWORD=password
    ```
+
+- Start the database container (run from the repo root):
+   ```bash
+   docker compose up -d
+   docker compose ps
+   ```
+
+- Import the schema into the running container (from repo root). Replace `david`/`tether_db` with your `.env` values if different:
+   ```bash
+   # copy schema into the container
+   docker cp backend/src/data/schema.sql tether_db:/tmp/schema.sql
+
+   # run psql inside the container to import the schema
+   docker exec -i tether_db psql -U david -d tether_db -f /tmp/schema.sql
+   ```
+
+- Connect from the host (`psql` client) to the containerized DB:
+   ```bash
+   psql -h localhost -p 5432 -U david -d tether_db
+   ```
+
+Notes:
+- If you already have a local PostgreSQL service running on port `5432`, either stop it (so Docker can bind the port) or change `PGPORT` in your `.env` and `docker-compose.yml` mapping to another host port (e.g. `5433`).
+- `pgadmin` is included in `docker-compose.yml` and will be available on `http://localhost:${PGADMIN_PORT}` once started.
 
 4. **Configure Environment Variables**
 
