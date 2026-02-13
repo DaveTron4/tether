@@ -1,11 +1,15 @@
-<div class="flex h-screen">
-  <app-navbar class="w-64 bg-gray-900 text-white"></app-navbar>
+<div class="tether-app-container">
   
-  <main class="flex-1 bg-blue-50 overflow-auto">
-    <div class="content p-6">
-      <!-- Your main content here -->
-    </div>
-  </main>
-</div>
+  <app-sidebar></app-sidebar>
 
-<router-outlet />
+  <div class="main-content-wrapper">
+    <app-header></app-header>
+
+    <main class="dynamic-screen-area">
+      <router-outlet></router-outlet> 
+    </main>
+
+    <app-footer></app-footer>
+
+  </div>
+</div>
