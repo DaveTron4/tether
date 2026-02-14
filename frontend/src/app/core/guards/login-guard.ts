@@ -2,14 +2,13 @@ import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { inject } from '@angular/core/primitives/di';
 
-export const authGuard: CanActivateFn = (route, state) => {
+export const loginGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
   if (authService.isLoggedIn()) {
-    return true;
-  } else {
-    router.navigate(['/login'], { queryParams: { returnUrl: state.url }});
+    router.navigate(['/inventory']);
     return false;
   }
+  return true;
 };
