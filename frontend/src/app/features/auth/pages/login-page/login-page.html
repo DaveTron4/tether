@@ -1,9 +1,15 @@
-<form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    <label for="username">Username:</label>
-    <input id="username" type="text" formControlName="username" />
-
-    <label for="password">Password:</label>
-    <input id="password" type="password" formControlName="password" />
-
-    <button type="submit">Login</button>
-</form>         
+<div class="login-form-container flex flex-col items-center justify-center min-h-screen">
+    <form class="login-form flex flex-col gap-4" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="input-group flex flex-col">
+            <label for="username">Username:</label>
+            <input id="username" type="text" formControlName="username" />
+        </div>
+    
+        <div class="input-group flex flex-col">
+            <label for="password">Password:</label>
+            <input id="password" type="password" formControlName="password" />
+        </div>
+    
+        <button class = "login-button bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" type="submit">Login</button>
+    </form>         
+</div>
