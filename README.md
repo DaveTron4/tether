@@ -23,18 +23,39 @@ Tether is a full-stack web application designed to manage ISP clients and track 
 
 ```
 tether/
-├── frontend/          # Angular application
+├── backend/
 │   ├── src/
-│   │   └── app/      # Components, routes, services
-│   └── public/       # Static assets
-├── backend/          # Express.js API
-│   ├── src/
-│   │   ├── config/   # Database & environment config
-│   │   ├── controllers/  # Business logic
-│   │   ├── routes/   # API routes
-│   │   └── data/     # Database schema
-└── README.md        # This file
-└── .env             # Environment variables (repo root, not committed)
+│   │   ├── config/
+│   │   ├── controllers/
+│   │   ├── data/
+│   │   ├── middleware/
+│   │   ├── models/
+│   │   └── routes/
+├── frontend/
+│   ├── public/
+│   └── src/
+│       ├── app/
+│       │   ├── core/
+│       │   │   ├── guards/
+│       │   │   ├── interceptors/
+│       │   │   ├── layouts/
+│       │   │   └── services/
+│       │   ├── features/
+│       │   │   ├── auth/
+│       │   │   │   ├── layout/
+│       │   │   │   └── pages/
+│       │   │   ├── crm/
+│       │   │   │   ├── components/
+│       │   │   │   └── pages/
+│       │   │   ├── inventory/
+│       │   │   │   ├── components/
+│       │   │   │   └── pages/
+│       │   │   └── repairs/
+│       │   │       └── pages/
+│       │   └── shared/
+│       │       ├── components/
+│       │       └── models/
+│       └── environments/
 ```
 
 ## 🛠️ Tech Stack
