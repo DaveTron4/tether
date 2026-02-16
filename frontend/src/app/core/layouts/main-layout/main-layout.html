@@ -1,8 +1,10 @@
-<div class="tether-app-container">
-  
-    <app-sidebar></app-sidebar>
+<div class="tether-app-container flex flex-row min-h-screen">
 
-    <div class="main-content-wrapper">
+    <div class="app-sidebar-overlay">
+        <app-sidebar></app-sidebar>
+    </div>
+
+    <div class="main-content-wrapper flex flex-col min-h-screen w-full">
         <app-header></app-header>
 
         <main class="dynamic-screen-area">

@@ -100,4 +100,79 @@
     .card-interactive {
         @apply p-6 rounded-xl border border-gray-200 bg-card-white text-text-main shadow-sm transition-shadow duration-300 cursor-pointer hover:border-primary/50 hover:bg-primary-light/10;
     }
+
+    /* Layout helpers to keep footer at bottom and constrain its width */
+    .main-content-wrapper { @apply flex flex-col min-h-screen; }
+    main.dynamic-screen-area { @apply flex-1; }
+
+    .app-footer { @apply w-full; }
+    .app-footer .dashboard-container { @apply items-center; }
+
+    /* Sidebar: icon-only collapsed, expands after 2s hover */
+    .app-sidebar {
+        /* collapsed look */
+        width: 4rem; /* 64px */
+        @apply flex flex-col items-stretch h-screen bg-card-darker text-text-main overflow-hidden shadow-md transition-all duration-200;
+        transition-delay: 0ms; /* collapse is immediate */
+    }
+
+    /* when JS sets the expanded state (recommended for 2s delay), use this class */
+    .app-sidebar.expanded {
+        @apply w-56;
+        transition-delay: 0ms;
+    }
+
+    /* after hovering for 2s, start expansion */
+    .app-sidebar:hover {
+        @apply w-56; /* expanded width (14rem / 224px) */
+        transition-delay: 0ms; /* wait 2s before starting expand */
+    }
+
+    /* menu container */
+    .sidebar-menu {
+        @apply flex flex-col gap-2 p-3 w-full;
+    }
+
+    /* each item: icon + hidden label */
+    .sidebar-item {
+        @apply flex flex-row items-center gap-3 rounded-md text-sm text-current no-underline w-full;
+    }
+
+    .sidebar-icon {
+        @apply w-7 h-7 flex-shrink-0 scale-100 transition-none;
+    }
+
+    /* label hidden when collapsed, revealed when expanded */
+    .sidebar-label {
+        @apply opacity-0 -translate-x-1 transition-all duration-0 whitespace-nowrap pointer-events-none;
+    }
+
+    /* reveal label when sidebar expands (slightly delayed to sync with width) */
+    .app-sidebar:hover .sidebar-label {
+        @apply opacity-100 translate-x-0;
+        transition-delay: 0ms; /* small extra delay so text appears after width */
+        pointer-events: auto;
+    }
+
+    /* When the sidebar has the explicit expanded class, show labels immediately
+       (use this when you expand via JS after a 2s hover timer) */
+    .app-sidebar.expanded .sidebar-label {
+        @apply opacity-100 translate-x-0 pointer-events-auto;
+        transition-delay: 0ms;
+    }
+
+    /* Ensure icons never scale on hover or expand */
+    .sidebar-item:hover .sidebar-icon,
+    .app-sidebar.expanded .sidebar-icon,
+    .app-sidebar:hover .sidebar-icon {
+        @apply scale-100;
+    }
+
+    .sidebar-btn {
+        @apply flex flex-row gap-2 p-2 items-center rounded-md no-underline w-full;
+    }
+
+    .sidebar-btn:hover {
+        @apply bg-accent/10 text-accent hover:cursor-pointer;
+    }
 }

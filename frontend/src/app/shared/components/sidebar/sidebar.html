@@ -1,1 +1,39 @@
-<p>sidebar works!</p>
+<nav
+  class="app-sidebar"
+  [class.expanded]="expanded"
+  (mouseenter)="onMouseEnter()"
+  (mouseleave)="onMouseLeave()"
+  (focusin)="onFocus()"
+  (focusout)="onBlur()"
+  tabindex="0"
+>
+    <ul class="sidebar-menu">
+        <!-- Repeat for each section: change href/icon/label -->
+        <li class="sidebar-item">
+            <a routerLink="/dashboard" class="sidebar-btn" title="Dashboard">
+                <lucide-icon name="home" class="sidebar-icon" aria-hidden="true"></lucide-icon>
+                <span class="sidebar-label" [class.visible]="expanded">Dashboard</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a routerLink="/inventory" class="sidebar-btn" title="Inventory">
+                <lucide-icon name="wrench" class="sidebar-icon" aria-hidden="true"></lucide-icon>
+                <span class="sidebar-label" [class.visible]="expanded">Inventory</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a routerLink="/clients" class="sidebar-btn" title="Customers">
+                <lucide-icon name="users" class="sidebar-icon" aria-hidden="true"></lucide-icon>
+                <span class="sidebar-label" [class.visible]="expanded">Customers</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a routerLink="/orders" class="sidebar-btn" title="Orders">
+                <lucide-icon name="box" class="sidebar-icon" aria-hidden="true"></lucide-icon>
+                <span class="sidebar-label" [class.visible]="expanded">Orders</span>
+            </a>
+        </li>
+
+        <!-- add more items -->
+    </ul>
+</nav>

@@ -1,17 +1,17 @@
 import {
-  withHttpTransferCache
-} from "./chunk-MZTF5S3S.js";
-import {
   CommonModule,
   PLATFORM_BROWSER_ID
-} from "./chunk-H25AM3NL.js";
+} from "./chunk-PPMYTNTU.js";
+import {
+  withHttpTransferCache
+} from "./chunk-D3MFO33A.js";
 import {
   DomAdapter,
   XhrFactory,
   getDOM,
   parseCookieValue,
   setRootDomAdapter
-} from "./chunk-WDQAX72V.js";
+} from "./chunk-7T5RAYKN.js";
 import {
   APP_ID,
   ApplicationModule,
@@ -1746,4 +1746,4 @@ export {
   provideClientHydration,
   VERSION
 };
-//# sourceMappingURL=chunk-MC7BQBF6.js.map
+//# sourceMappingURL=chunk-C7IHD46H.js.map
