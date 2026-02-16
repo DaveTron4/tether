@@ -1,1 +1,29 @@
-<p>client-list works!</p>
+<div class="p-8 max-w-7xl mx-auto">
+  
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Clients</h1>
+      <p class="text-sm text-gray-500 mt-1">Manage your customer relationships</p>
+    </div>
+    <button class="btn-primary flex items-center gap-2">
+      <lucide-icon name="plus" class="w-4 h-4"></lucide-icon>
+      Add New Client
+    </button>
+  </div>
+
+  <div class="mb-6 relative">
+    <lucide-icon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5"></lucide-icon>
+    <input 
+      type="text" 
+      placeholder="Search by name, phone, or email..." 
+      class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+      (input)="updateSearch($event)"
+    >
+  </div>
+
+  <app-client-table 
+    [clients]="filteredClients()" 
+    (onEdit)="openEditModal($event)">
+  </app-client-table>
+
+</div>

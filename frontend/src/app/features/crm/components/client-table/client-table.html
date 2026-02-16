@@ -1,1 +1,67 @@
-<p>client-table works!</p>
+<div class="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
+    <table class="w-full text-left text-sm text-text-main">
+    
+        <thead class="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold">
+            <tr>
+                <th class="px-6 py-4">Name</th>
+                <th class="px-6 py-4">Contact</th>
+                <th class="px-6 py-4">Status</th>
+                <th class="px-6 py-4">Last Visit</th>
+                <th class="px-6 py-4 text-right">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody class="divide-y divide-gray-100">
+            @for (client of clients; track client.id) {
+                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                    
+                    <td class="px-6 py-4 font-medium text-gray-900">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-primary-light text-primary flex items-center justify-center font-bold text-xs">
+                                {{ client.name.slice(0,2).toUpperCase() }}
+                            </div>
+                            {{ client.name }}
+                        </div>
+                    </td>
+
+                    <td class="px-6 py-4 text-gray-500">
+                        <div class="flex flex-col">
+                            <span>{{ client.phone }}</span>
+                            <span class="text-xs text-gray-400">{{ client.email }}</span>
+                        </div>
+                    </td>
+
+                    <td class="px-6 py-4">
+                        <span 
+                            class="px-2 py-1 rounded-full text-xs font-medium border"
+                            [ngClass]="{
+                            'bg-green-50 text-green-700 border-green-200': client.status === 'Active',
+                            'bg-gray-100 text-gray-600 border-gray-200': client.status === 'Inactive',
+                            'bg-yellow-50 text-secondary border-secondary': client.status === 'Debt'
+                            }"
+                        >
+                            {{ client.status }}
+                        </span>
+                    </td>
+
+                    <td class="px-6 py-4 text-gray-500">
+                        {{ client.lastVisit }}
+                    </td>
+
+                    <td class="px-6 py-4 text-right">
+                        <button (click)="onEdit.emit(client)" class="text-gray-400 hover:text-primary transition-colors p-2">
+                            <lucide-icon name="edit" class="w-4 h-4"></lucide-icon>
+                        </button>
+                    </td>
+                </tr>
+            } @empty {
+                <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                        No clients found.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+`
