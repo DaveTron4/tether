@@ -6,71 +6,76 @@ import { AuthResponse } from '../../shared/models/authResponse.interface';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
-  providedIn: 'root' // Makes this available everywhere
+  providedIn: 'root'
 })
-export class AuthService {
-  
-  // Dependencies (Modern syntax)
+export class Auth {
+
   private http = inject(HttpClient);
   private router = inject(Router);
   
-  // API URL (In real life, use environment.apiUrl)
   private apiUrl = `${environment.apiUrl}/auth`;
 
-  // 2. STATE: A Signal to hold the current user
-  // Other components can read this without subscribing!
   currentUser = signal<AuthResponse['user'] | null>(this.getUserFromStorage());
 
   // ==========================================================
-  // 3. THE LOGIN METHOD (The "Yes/No" + Storage)
+  // LOGIN METHOD
   // ==========================================================
   login(credentials: { email?: string; username?: string; password: string }) {
-    // Backend expects { username, password }. Support callers that pass `email`.
     const payload = {
-      username: credentials.username ?? credentials.email,
+      email: credentials.email,
+      username: credentials.username,
       password: credentials.password,
     };
 
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, payload).pipe(
       tap((response) => {
-        // A. Backend said YES and gave us a token.
-        // B. Store the token in the browser's secret pocket.
         localStorage.setItem('tether_token', response.token);
         
-        // C. Store the user data too (so we don't have to ask for it again).
         localStorage.setItem('tether_user', JSON.stringify(response.user));
 
-        // D. Update the Signal so the UI updates instantly.
         this.currentUser.set(response.user);
+
+        const returnUrl = this.router.routerState.snapshot.root.queryParams['returnUrl'] || '/inventory';
+        this.router.navigateByUrl(returnUrl);
       })
     );
   }
 
   // ==========================================================
-  // 4. THE LOGOUT METHOD
+  // LOGOUT METHOD
   // ==========================================================
   logout() {
-    // A. Rip up the ID badge
+
     localStorage.removeItem('tether_token');
     localStorage.removeItem('tether_user');
-    
-    // B. Clear the state
+
     this.currentUser.set(null);
-    
-    // C. Kick them out
+
     this.router.navigate(['/login']);
   }
 
   // ==========================================================
-  // 5. HELPER: AM I LOGGED IN?
+  // HELPER: AM I LOGGED IN?
   // ==========================================================
   isLoggedIn(): boolean {
-    // Simply checks if we have a token in the pocket.
-    // (Bonus: You can add logic here to check if it's expired)
+
     return !!localStorage.getItem('tether_token');
   }
 
-  // Private helper to restore state on page refresh
+  // ==========================================================
+  // Register Method
+  // ==========================================================
+  register(data: { email: string; username: string; password: string }) {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data).pipe(
+      tap((response) => {
+        localStorage.setItem('tether_token', response.token);
+        localStorage.setItem('tether_user', JSON.stringify(response.user));
+        this.currentUser.set(response.user);
+      })
+    );
+  }
+  // ==========================================================
+
   private getUserFromStorage() {
     const user = localStorage.getItem('tether_user');
     return user ? JSON.parse(user) : null;

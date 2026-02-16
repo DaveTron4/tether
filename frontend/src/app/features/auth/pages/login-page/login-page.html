@@ -1,15 +1,25 @@
-<div class="login-form-container flex flex-col items-center justify-center min-h-screen">
-    <form class="login-form flex flex-col gap-4" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <div class="input-group flex flex-col">
-            <label for="username">Username:</label>
-            <input id="username" type="text" formControlName="username" />
-        </div>
-    
-        <div class="input-group flex flex-col">
-            <label for="password">Password:</label>
-            <input id="password" type="password" formControlName="password" />
-        </div>
-    
-        <button class = "login-button bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" type="submit">Login</button>
-    </form>         
+<div class="card">
+
+    <h2 class="text-2xl font-bold mb-4">Login</h2>
+
+
+    <div class="card-content">
+        <form class="login-form flex flex-col gap-4" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <div class="input-group flex flex-col">
+                <label for="username">Username:</label>
+                <input id="username" placeholder="Enter your username" type="text" formControlName="username" />
+            </div>
+        
+            <div class="input-group flex flex-col">
+                <label for="password">Password:</label>
+                <input id="password" placeholder="Enter your password" type="password" formControlName="password" />
+            </div>
+        
+            <button class = "btn-primary" type="submit">Login</button>
+        </form>         
+    </div>
+
+    <div class="card-footer mt-4 text-center">
+        <p>Don't have an account? <a class="text-primary hover:underline hover:cursor-pointer" routerLink="/register">Register here</a></p>
+    </div>
 </div>

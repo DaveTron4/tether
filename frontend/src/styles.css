@@ -1,1 +1,103 @@
 @import "tailwindcss";
+@custom-variant dark (&:where([data-theme="dark"], data-theme="dark") *);
+
+/* ========= */
+/* Dark Mode */
+/* ========= */
+@theme dark {
+    /* Define Colors */
+    --color-primary: #3b82f6;
+    --color-secondary: #ec4899;
+    --color-dark: #1f2937;
+
+    /* Define Fonts */
+    --font-display: "Satoshi", "sans-serif";
+    
+    /* Define Spacing or Breakpoints */
+    --spacing-128: 32rem;
+    --breakpoint-3xl: 1920px;
+}
+
+/* ===========*/
+/* Light Mode */
+/* ========== */
+@theme {
+    /* --- Primary (Deep Purple) --- */
+    --color-primary: #454796;
+    --color-primary-hover: #37397a; /* 10% Darker for hover */
+    --color-primary-light: #e0e0fc; /* Very light purple for backgrounds */
+
+    /* --- Secondary (Gold) --- */
+    --color-secondary: #CCAF2B;
+    --color-secondary-hover: #a38c22;
+    
+    /* --- Accent (Electric Blue) --- */
+    --color-accent: #1E22EB;
+    --color-accent-hover: #1619ad;
+
+    /* --- Backgrounds & Surfaces --- */
+    --color-background: #F3F3F3; /* Your Main BG */
+    
+    /* Cards */
+    --color-card-white: #ffffff;
+    --color-card-darker: #e5e5e5; 
+    
+    --color-text-main: #1f2937;
+    --color-text-muted: #6b7280;
+
+    /* --- Fonts --- */
+    --font-display: "Inter", "sans-serif";
+
+    /* Define Spacing or Breakpoints */
+    --spacing-128: 32rem;
+    --breakpoint-3xl: 1920px;    
+}
+
+@layer base {
+    body {
+        @apply bg-background text-text-main font-display;
+    }
+    
+    /* Global Link Styles */
+    a {
+        @apply text-primary hover:text-primary-hover transition-colors duration-200 hover:cursor-pointer;
+    }
+
+    /* Form Elements */
+    input, textarea, select {
+        @apply border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary;
+    }
+}
+
+/* Custom Component Styles */
+@layer components {
+    /* Primary Button Standard */
+    .btn-primary {
+        @apply bg-primary text-white px-6 py-2 rounded-lg font-medium;
+        @apply hover:bg-primary-hover transition-colors duration-200 hover:cursor-pointer;
+        @apply active:scale-95 transform; /* Subtle click effect */
+    }
+    .btn-secondary {
+        @apply bg-secondary text-white px-4 py-2 rounded hover:bg-secondary-hover hover:cursor-pointer;
+    }
+    .btn-accent {
+        @apply bg-accent text-white px-4 py-2 rounded hover:bg-accent-hover hover:cursor-pointer;
+    }
+
+    .card {
+        /* Layout & Spacing */
+        @apply p-6 h-1/2 rounded-xl border border-gray-200;
+        
+        /* Coloring (Using Option A: White for better shadow visibility) */
+        /* Change to 'bg-card-darker' if you prefer the gray look */
+        @apply bg-card-white text-text-main;
+        
+        /* Shadow & Transition */
+        @apply shadow-sm hover:shadow-md transition-shadow duration-300;
+    }
+
+    /* A variant for clickable cards (like menu items) */
+    .card-interactive {
+        @apply p-6 rounded-xl border border-gray-200 bg-card-white text-text-main shadow-sm transition-shadow duration-300 cursor-pointer hover:border-primary/50 hover:bg-primary-light/10;
+    }
+}

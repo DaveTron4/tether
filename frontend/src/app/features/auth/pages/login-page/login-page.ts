@@ -1,17 +1,18 @@
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { AuthService } from '../../../../core/services/auth.service';
+import { RouterLink } from '@angular/router';
 
+import { Auth } from '../../../../core/services/auth';
 
 @Component({
   standalone: true,
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login-page.html',
   styleUrls: ['./login-page.css'],
 })
 export class LoginPage {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: Auth) {}
   loginForm = new FormGroup({
     username: new FormControl(''),
     password: new FormControl('')
@@ -22,7 +23,7 @@ export class LoginPage {
       const { username, password } = this.loginForm.value;
       this.authService.login({ username: username!, password: password! }).subscribe({
         next: () => {
-          // Login successful, navigation is handled by the AuthService
+          // Login successful, navigation is handled by the Auth
         },
         error: (err) => {
           console.error('Login failed:', err);
