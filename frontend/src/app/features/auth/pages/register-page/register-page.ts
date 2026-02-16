@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
-import { Auth } from '../../../../core/services/auth';
+import { AuthService } from '../../../../core/services/auth';
 
 @Component({
   selector: 'app-register-page',
@@ -12,7 +12,7 @@ import { Auth } from '../../../../core/services/auth';
   styleUrl: './register-page.css',
 })
 export class RegisterPage {
-  constructor(private authService: Auth) {}
+  constructor(private authService: AuthService) {}
   registerForm = new FormGroup({
     email: new FormControl(''),
     username: new FormControl(''),
@@ -25,7 +25,7 @@ export class RegisterPage {
       const { email, username, password } = this.registerForm.value;
       this.authService.register({ email: email!, username: username!, password: password! }).subscribe({
         next: () => {
-          // Registration successful, navigation is handled by the Auth service
+          // Registration successful, navigation is handled by the AuthService
           this.authService.isLoggedIn() ? this.authService.logout() : null;
         },
         error: (err) => {

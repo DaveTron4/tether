@@ -1,11 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, MoreHorizontal, Edit, Trash2, LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
 import { Client } from '../../../../shared/models/client.interface';
+import { ClientTable } from '../../components/client-table/client-table';
+import { ClientService } from '../../../../core/services/client';
 
 @Component({
   selector: 'app-client-list',
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, ClientTable],
   templateUrl: './client-list.html',
   styleUrl: './client-list.css',
   providers: [
@@ -16,6 +18,41 @@ import { Client } from '../../../../shared/models/client.interface';
     }
   ]
 })
-export class ClientList {
+export class ClientList implements OnInit{
 
+  private clientService = inject(ClientService);
+
+  private rawClients = signal<Client[]>([]); 
+
+  protected searchQuery = signal<string>('');
+
+  protected filteredClients = computed(() => {
+    const query = this.searchQuery().toLowerCase();
+    const all = this.rawClients();
+
+    // If search is empty, return everything
+    if (!query) return all;
+
+    // Otherwise, filter by Name, Phone, or Email
+    return all.filter(client => 
+      client.full_name?.toLowerCase().includes(query) || 
+      client.phone_number?.includes(query)
+    );
+  });
+
+  ngOnInit(): void {
+    this.clientService.getClients().subscribe((data) => {
+      this.rawClients.set(data); // Store the data in the signal
+    });
+  }     
+
+  updateSearch(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.searchQuery.set(input.value); // Update the signal
+  }
+
+  openEditModal(client: Client) {
+    console.log('Editing client:', client);
+    // Logic to open modal goes here
+  }
 }

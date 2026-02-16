@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
-import { Auth } from '../../../../core/services/auth';
+import { AuthService } from '../../../../core/services/auth';
 
 @Component({
   standalone: true,
@@ -12,7 +12,7 @@ import { Auth } from '../../../../core/services/auth';
   styleUrls: ['./login-page.css'],
 })
 export class LoginPage {
-  constructor(private authService: Auth) {}
+  constructor(private authService: AuthService) {}
   loginForm = new FormGroup({
     username: new FormControl(''),
     password: new FormControl('')
@@ -23,7 +23,7 @@ export class LoginPage {
       const { username, password } = this.loginForm.value;
       this.authService.login({ username: username!, password: password! }).subscribe({
         next: () => {
-          // Login successful, navigation is handled by the Auth
+          // Login successful, navigation is handled by the AuthService
         },
         error: (err) => {
           console.error('Login failed:', err);

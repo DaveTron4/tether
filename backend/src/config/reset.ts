@@ -1,5 +1,8 @@
 import dotenv from 'dotenv';
 
+// Load environment variables before importing any DB code
+dotenv.config();
+
 import bcrypt from 'bcrypt';
 const { pool } = await import('./database.js');
 
@@ -47,6 +50,7 @@ const createClientsTable = async () => {
         full_name VARCHAR(100) NOT NULL,
         phone_number VARCHAR(20),
         zip_code VARCHAR(10),
+        subscriptions JSONB, -- Store phone/wifi plans as JSON
         notes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`;
@@ -57,8 +61,8 @@ const createClientsTable = async () => {
 const seedClientsTable = async () => {
     // We insert a client and return the ID so we can give them subscriptions later
     await pool.query(`
-        INSERT INTO clients (full_name, phone_number, zip_code, notes)
-        VALUES ('John Doe', '404-698-9528', '30018', 'Prefer text reminders')
+        INSERT INTO clients (full_name, phone_number, zip_code, subscriptions, notes)
+        VALUES ('John Doe', '404-698-9528', '30018', '{"phone": "T-Mobile", "wifi": "Xfinity"}', 'Prefer text reminders')
     `);
     console.log("🌱 Clients seeded");
 };

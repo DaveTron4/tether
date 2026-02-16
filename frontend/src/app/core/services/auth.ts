@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
-export class Auth {
+export class AuthService {
 
   private http = inject(HttpClient);
   private router = inject(Router);
