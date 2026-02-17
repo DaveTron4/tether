@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
+// Services
 import { AuthService } from '../../../../core/services/auth';
 
 @Component({
@@ -13,10 +14,11 @@ import { AuthService } from '../../../../core/services/auth';
 })
 export class LoginPage {
   constructor(private authService: AuthService) {}
-  loginForm = new FormGroup({
-    username: new FormControl(''),
-    password: new FormControl('')
-  });
+    loginForm = new FormGroup({
+      username: new FormControl(''),
+      password: new FormControl('')
+    }
+  );
 
   onSubmit() {
     if (this.loginForm.valid) {

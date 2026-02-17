@@ -9,7 +9,9 @@ export interface Client {
   notes?: string;
   
   subscriptions?: Subscription[]; 
+  status?: 'Active' | 'Inactive' | 'Debt';
 
+  last_visit?: string;
   created_at?: string; 
   updated_at?: string;
 }

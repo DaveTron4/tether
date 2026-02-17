@@ -1,11 +1,11 @@
-<div class="p-8 max-w-7xl mx-auto">
+<div class="p-8 w-full max-w-7xl mx-auto">
   
   <div class="flex justify-between items-center mb-6">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Clients</h1>
       <p class="text-sm text-gray-500 mt-1">Manage your customer relationships</p>
     </div>
-    <button class="btn-primary flex items-center gap-2">
+    <button class="btn-primary flex items-center gap-2" (click)="openCreateModal()">
       <lucide-icon name="plus" class="w-4 h-4"></lucide-icon>
       Add New Client
     </button>
@@ -25,5 +25,7 @@
     [clients]="filteredClients()" 
     (onEdit)="openEditModal($event)">
   </app-client-table>
+
+  <app-client-form-modal *ngIf="showCreateModal()" (close)="closeCreateModal()"></app-client-form-modal>
 
 </div>

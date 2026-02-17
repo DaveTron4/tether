@@ -1,20 +1,27 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, MoreHorizontal, Edit, Trash2, LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
-import { Client } from '../../../../shared/models/client.interface';
+import { LucideAngularModule, MoreHorizontal,Plus, Search, Edit, Trash2, LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
+
+// Components
 import { ClientTable } from '../../components/client-table/client-table';
+import { ClientFormModal } from '../../components/client-form-modal/client-form-modal';
+
+// Interfaces
+import { Client } from '../../../../shared/models/client.interface';
+
+// Services
 import { ClientService } from '../../../../core/services/client';
 
 @Component({
   selector: 'app-client-list',
-  imports: [CommonModule, LucideAngularModule, ClientTable],
+  imports: [CommonModule, LucideAngularModule, ClientTable, ClientFormModal],
   templateUrl: './client-list.html',
   styleUrl: './client-list.css',
   providers: [
     {
       provide: LUCIDE_ICONS,
       multi: true,
-      useValue: new LucideIconProvider({ MoreHorizontal, Edit, Trash2 })
+      useValue: new LucideIconProvider({ MoreHorizontal, Plus, Search, Edit, Trash2 })
     }
   ]
 })
@@ -49,6 +56,17 @@ export class ClientList implements OnInit{
   updateSearch(event: Event) {
     const input = event.target as HTMLInputElement;
     this.searchQuery.set(input.value); // Update the signal
+  }
+
+  // Modal state for creating a client
+  protected showCreateModal = signal<boolean>(false);
+
+  openCreateModal() {
+    this.showCreateModal.set(true);
+  }
+
+  closeCreateModal() {
+    this.showCreateModal.set(false);
   }
 
   openEditModal(client: Client) {

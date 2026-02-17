@@ -18,15 +18,15 @@
                     <td class="px-6 py-4 font-medium text-gray-900">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-full bg-primary-light text-primary flex items-center justify-center font-bold text-xs">
-                                {{ client.name.slice(0,2).toUpperCase() }}
+                                {{ client.full_name.slice(0,2).toUpperCase() }}
                             </div>
-                            {{ client.name }}
+                            {{ client.full_name }}
                         </div>
                     </td>
 
                     <td class="px-6 py-4 text-gray-500">
                         <div class="flex flex-col">
-                            <span>{{ client.phone }}</span>
+                            <span>{{ client.phone_number }}</span>
                             <span class="text-xs text-gray-400">{{ client.email }}</span>
                         </div>
                     </td>
@@ -45,7 +45,7 @@
                     </td>
 
                     <td class="px-6 py-4 text-gray-500">
-                        {{ client.lastVisit }}
+                        {{ client.last_visit ? (client.last_visit | date:'MMM d, y, h:mm a') : 'Never' }}
                     </td>
 
                     <td class="px-6 py-4 text-right">

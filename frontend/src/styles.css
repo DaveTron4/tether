@@ -67,6 +67,10 @@
     input, textarea, select {
         @apply border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary;
     }
+
+    button {
+        @apply hover:cursor-pointer;
+    }
 }
 
 /* Custom Component Styles */
@@ -174,5 +178,31 @@
 
     .sidebar-btn:hover {
         @apply bg-accent/10 text-accent hover:cursor-pointer;
+    }
+
+    .header {
+        @apply flex flex-row w-full bg-card-white shadow-md items-center justify-between px-4 py-2;
+    }
+
+    .dropdown {
+        @apply absolute right-0 mt-2 w-48 bg-card-darker rounded-md shadow-lg z-10 inline-block text-left text-primary;
+    }
+
+    .logout {
+        @apply w-full text-left px-4 py-2 text-sm text-primary hover:bg-accent/10 hover:text-accent transition-colors duration-200;
+    }
+
+    .fullname {
+        @apply text-sm text-text-muted px-4 py-2 ;
+    }
+
+    /* Modal overlay - covers the entire screen with a semi-transparent backdrop */
+    .client-form-modal-overlay {
+        @apply fixed inset-0 z-50 flex items-center justify-center bg-black/50;
+    }
+
+    /* Modal content box */
+    .client-form-modal {
+        @apply relative p-6 bg-white rounded-lg shadow-lg w-full max-w-md mx-4;
     }
 }

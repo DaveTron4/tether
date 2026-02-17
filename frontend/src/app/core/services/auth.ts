@@ -76,8 +76,18 @@ export class AuthService {
   }
   // ==========================================================
 
+  // =========================================================
+  // HELPER: Get User from Local Storage
+  // ==========================================================
   private getUserFromStorage() {
     const user = localStorage.getItem('tether_user');
     return user ? JSON.parse(user) : null;
+  }
+
+  // =========================================================
+  // HELPER: Get Authenticated User
+  // =========================================================
+  getAuthenticatedUser() {
+    return this.currentUser();
   }
 }

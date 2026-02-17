@@ -3,7 +3,8 @@ export interface AuthResponse {
   user: {
     id: number;
     email: string;
-    name: string;
+    fullName: string;
+    password_hash: string;
     role: 'admin' | 'employee';
   };
 }

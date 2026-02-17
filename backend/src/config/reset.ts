@@ -21,6 +21,7 @@ const createUsersTable = async () => {
     CREATE TABLE users (
         id SERIAL PRIMARY KEY,
         username VARCHAR(50) UNIQUE NOT NULL,
+        email VARCHAR(100) UNIQUE,
         password_hash VARCHAR(255) NOT NULL,
         role VARCHAR(20) DEFAULT 'employee',
         full_name VARCHAR(100),
@@ -33,9 +34,9 @@ const createUsersTable = async () => {
 const seedUsersTable = async () => {
     const password = await bcrypt.hash(process.env.ADMIN_PASSWORD as string, 10);
     await pool.query(`
-        INSERT INTO users (username, password_hash, full_name, role)
-        VALUES ($1, $2, $3, $4)
-    `, ['David', password, 'Master Admin', 'admin']);
+        INSERT INTO users (username, password_hash, full_name, email, role)
+        VALUES ($1, $2, $3, $4, $5)
+    `, ['David', password, 'Master Admin', 'david@tether.com', 'admin']);
     console.log("🌱 Users seeded (Admin created)");
 };
 
@@ -49,9 +50,12 @@ const createClientsTable = async () => {
         id SERIAL PRIMARY KEY,
         full_name VARCHAR(100) NOT NULL,
         phone_number VARCHAR(20),
+        email VARCHAR(100),
         zip_code VARCHAR(10),
+        status VARCHAR(20) DEFAULT 'Active', -- 'Active', 'Inactive', 'Debt'
         subscriptions JSONB, -- Store phone/wifi plans as JSON
         notes TEXT,
+        last_visit TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`;
     await pool.query(query);
@@ -61,8 +65,8 @@ const createClientsTable = async () => {
 const seedClientsTable = async () => {
     // We insert a client and return the ID so we can give them subscriptions later
     await pool.query(`
-        INSERT INTO clients (full_name, phone_number, zip_code, subscriptions, notes)
-        VALUES ('John Doe', '404-698-9528', '30018', '{"phone": "T-Mobile", "wifi": "Xfinity"}', 'Prefer text reminders')
+        INSERT INTO clients (full_name, phone_number, email, zip_code, status, subscriptions, notes, last_visit)
+        VALUES ('John Doe', '404-698-9528', 'john.doe@example.com', '30018', 'Active', '{"phone": "T-Mobile", "wifi": "Xfinity"}', 'Prefer text reminders', CURRENT_TIMESTAMP)
     `);
     console.log("🌱 Clients seeded");
 };

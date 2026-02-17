@@ -1,0 +1,45 @@
+<div class="client-form-modal-overlay">
+    <div class="client-form-modal">
+        <h2 class="text-2xl font-semibold mb-4">Add New Client</h2>
+        <lucide-icon name="x" class="w-5 h-5 absolute top-4 right-4  cursor-pointer hover:bg-gray-200 rounded-full p-1" (click)="close.emit()"></lucide-icon>
+        <form [formGroup]="clientForm" (ngSubmit)="onSubmit()">
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Full Name</label>
+                <input formControlName="fullName" type="text" placeholder="John Doe" class="w-full" />
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Email</label>
+                <input formControlName="email" type="email" placeholder="john.doe@example.com" class="w-full" />
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Phone Number</label>
+                <input formControlName="phone" type="text" placeholder="(123) 456-7890" class="w-full" />
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Zip Code</label>
+                <input formControlName="zipCode" type="text" placeholder="12345" class="w-full" />
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Status</label>
+                <select formControlName="status" class="w-full">
+                    <option value="">Select Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Debt">Debt</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Notes</label>
+                <textarea formControlName="notes" rows="4" placeholder="Additional information about the client..." class="w-full"></textarea>
+            </div>
+
+
+            <button type="submit" class="mt-4 px-4 py-2 bg-primary text-white rounded">Submit</button>
+        </form>
+    </div>
+</div>
