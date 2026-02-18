@@ -49,13 +49,13 @@ export class ClientList implements OnInit{
 
   ngOnInit(): void {
     this.clientService.getClients().subscribe((data) => {
-      this.rawClients.set(data); // Store the data in the signal
+      this.rawClients.set(data);
     });
   }     
 
   updateSearch(event: Event) {
     const input = event.target as HTMLInputElement;
-    this.searchQuery.set(input.value); // Update the signal
+    this.searchQuery.set(input.value);
   }
 
   // Modal state for creating a client

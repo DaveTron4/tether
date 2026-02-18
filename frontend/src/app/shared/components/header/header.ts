@@ -1,13 +1,12 @@
 import { Component, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 
 // Services
 import { AuthService } from '../../../core/services/auth';
 
 @Component({
   selector: 'app-header',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule ],
   templateUrl: './header.html',
   styleUrl: './header.css',
 })

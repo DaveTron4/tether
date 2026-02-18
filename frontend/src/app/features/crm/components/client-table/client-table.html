@@ -49,9 +49,10 @@
                     </td>
 
                     <td class="px-6 py-4 text-right">
-                        <button (click)="onEdit.emit(client)" class="text-gray-400 hover:text-primary transition-colors p-2">
+                        <!-- On click route to client detail page -->
+                        <a [routerLink]="['/clients', client.id]" class="text-gray-400 hover:text-primary transition-colors p-2">
                             <lucide-icon name="edit" class="w-4 h-4"></lucide-icon>
-                        </button>
+                        </a>
                     </td>
                 </tr>
             } @empty {

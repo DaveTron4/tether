@@ -1,6 +1,7 @@
 import {
   Title
-} from "./chunk-C7IHD46H.js";
+} from "./chunk-XTY7BFKZ.js";
+import "./chunk-YFTGPTIT.js";
 import {
   HashLocationStrategy,
   Location,
@@ -10,12 +11,11 @@ import {
   PathLocationStrategy,
   PlatformNavigation,
   ViewportScroller
-} from "./chunk-PPMYTNTU.js";
-import "./chunk-D3MFO33A.js";
+} from "./chunk-GJIDXTC3.js";
 import {
   LOCATION_INITIALIZED,
   PlatformLocation
-} from "./chunk-7T5RAYKN.js";
+} from "./chunk-NAQ7PDNA.js";
 import {
   APP_BOOTSTRAP_LISTENER,
   ApplicationRef,
@@ -54,13 +54,11 @@ import {
   booleanAttribute,
   computed,
   createEnvironmentInjector,
-  defer,
   formatRuntimeError,
   inject,
   input,
   isInjectable,
   isNgModule,
-  isObservable,
   isPromise,
   isStandalone,
   makeEnvironmentProviders,
@@ -92,8 +90,13 @@ import {
   ɵɵloadQuery,
   ɵɵqueryRefresh,
   ɵɵsanitizeUrlOrResourceUrl
-} from "./chunk-OIPLUEBC.js";
-import "./chunk-2S2P4GUU.js";
+} from "./chunk-IYSQIG7V.js";
+import {
+  defer,
+  isObservable
+} from "./chunk-VVTI5753.js";
+import "./chunk-ANZF244O.js";
+import "./chunk-2ZH5GRFP.js";
 import {
   BehaviorSubject,
   EMPTY,
@@ -121,13 +124,13 @@ import {
   takeUntil,
   tap,
   throwError
-} from "./chunk-GX57LPBD.js";
+} from "./chunk-LX2Q34Y6.js";
 import {
   __spreadProps,
   __spreadValues
 } from "./chunk-GOMI4DH3.js";
 
-// node_modules/@angular/router/fesm2022/_router-chunk.mjs
+// ../../../../../node_modules/@angular/router/fesm2022/_router-chunk.mjs
 var PRIMARY_OUTLET = "primary";
 var RouteTitleKey = /* @__PURE__ */ Symbol("RouteTitle");
 var ParamsAsMap = class {
@@ -4485,7 +4488,7 @@ function validateCommands(commands) {
   }
 }
 
-// node_modules/@angular/router/fesm2022/_router_module-chunk.mjs
+// ../../../../../node_modules/@angular/router/fesm2022/_router_module-chunk.mjs
 var RouterLink = class _RouterLink {
   router;
   route;
@@ -5727,7 +5730,7 @@ function provideRouterInitializer() {
   }];
 }
 
-// node_modules/@angular/router/fesm2022/router.mjs
+// ../../../../../node_modules/@angular/router/fesm2022/router.mjs
 function mapToCanMatch(providers) {
   return providers.map((provider) => (...params) => inject(provider).canMatch(...params));
 }

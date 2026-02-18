@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@source "../../**/*.html";
+@source "../../**/*.ts";
 @custom-variant dark (&:where([data-theme="dark"], data-theme="dark") *);
 
 /* ========= */
@@ -22,6 +24,9 @@
 /* Light Mode */
 /* ========== */
 @theme {
+    /* Base spacing unit - required for p-*, m-*, gap-* utilities */
+    --spacing: 0.25rem;
+    
     /* --- Primary (Deep Purple) --- */
     --color-primary: #454796;
     --color-primary-hover: #37397a; /* 10% Darker for hover */
@@ -184,6 +189,14 @@
         @apply flex flex-row w-full bg-card-white shadow-md items-center justify-between px-4 py-2;
     }
 
+    .profile {
+        @apply relative;
+    }
+
+    .initials {
+        @apply w-8 h-8 rounded-full bg-primary-light text-primary flex items-center justify-center font-bold text-xs cursor-pointer;
+    }
+
     .dropdown {
         @apply absolute right-0 mt-2 w-48 bg-card-darker rounded-md shadow-lg z-10 inline-block text-left text-primary;
     }
@@ -193,7 +206,7 @@
     }
 
     .fullname {
-        @apply text-sm text-text-muted px-4 py-2 ;
+        @apply text-sm text-text-muted px-4 py-2;
     }
 
     /* Modal overlay - covers the entire screen with a semi-transparent backdrop */
@@ -204,5 +217,17 @@
     /* Modal content box */
     .client-form-modal {
         @apply relative p-6 bg-white rounded-lg shadow-lg w-full max-w-md mx-4;
+    }
+
+    .app-footer {
+        @apply bg-primary text-white py-2 px-6;
+    }
+
+    .footer-content {
+        @apply  flex items-center justify-between;
+    }
+
+    .footer-link {
+        @apply ml-4 hover:underline text-white;
     }
 }

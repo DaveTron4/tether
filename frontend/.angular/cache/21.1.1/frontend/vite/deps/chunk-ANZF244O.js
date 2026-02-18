@@ -1,4 +1,4 @@
-// node_modules/@angular/core/fesm2022/_not_found-chunk.mjs
+// ../../../../../node_modules/@angular/core/fesm2022/_not_found-chunk.mjs
 var _currentInjector = void 0;
 function getCurrentInjector() {
   return _currentInjector;
@@ -29,7 +29,7 @@ function isNotFound(e) {
   return e === NOT_FOUND || e?.name === "ɵNotFound";
 }
 
-// node_modules/@angular/core/fesm2022/primitives-di.mjs
+// ../../../../../node_modules/@angular/core/fesm2022/primitives-di.mjs
 function defineInjectable(opts) {
   return {
     token: opts.token,
@@ -53,4 +53,4 @@ export {
   defineInjectable,
   registerInjectable
 };
-//# sourceMappingURL=chunk-2S2P4GUU.js.map
+//# sourceMappingURL=chunk-ANZF244O.js.map
