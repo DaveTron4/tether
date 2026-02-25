@@ -2,42 +2,61 @@
     <div class="client-form-modal">
         <h2 class="text-2xl font-semibold mb-4">Add New Client</h2>
         <lucide-icon name="x" class="w-5 h-5 absolute top-4 right-4  cursor-pointer hover:bg-gray-200 rounded-full p-1" (click)="close.emit()"></lucide-icon>
-        <form [formGroup]="clientForm" (ngSubmit)="onSubmit()">
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Full Name</label>
-                <input formControlName="fullName" type="text" placeholder="John Doe" class="w-full" />
-            </div>
+        <form [formGroup]="clientForm" (ngSubmit)="onSubmit()" class="space-y-5">
+            <div class="flex flex-col gap-6">
+                <div class="flex flex-col gap-6 md:flex-row">
+                    <fieldset class="border border-gray-200 rounded-lg px-4 pt-3 pb-4 w-full">
+                    <legend class="px-2 text-sm font-semibold text-gray-600 whitespace-nowrap">Personal Information</legend>
+                    <div class="space-y-4">
+                        <div>
+                            <input formControlName="fullName" type="text" placeholder="Full Name" class="w-full" />
+                        </div>
+    
+                        <div>
+                            <input formControlName="email" type="email" placeholder="Email" class="w-full" />
+                        </div>
+            
+                        <div>
+                            <input formControlName="phone" type="text" placeholder="Phone Number" class="w-full" />
+                        </div>
+                        <div>
+                            <input formControlName="zipCode" type="text" placeholder="Zip Code" class="w-full" />
+                        </div>
+                    </div>
+                    </fieldset>
+    
+                    <fieldset class="border border-gray-200 rounded-lg px-4 pt-3 pb-4 w-full">
+                    <legend class="px-2 text-sm font-semibold text-gray-600 whitespace-nowrap">Subscriptions</legend>
+                    <div class="space-y-4" formGroupName="subscriptions">
+                        <div>
+                            <input formControlName="phone" type="text" placeholder="Phone Provider" class="w-full" />
+                        </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Email</label>
-                <input formControlName="email" type="email" placeholder="john.doe@example.com" class="w-full" />
-            </div>
+                        <div>
+                            <input formControlName="wifi" type="text" placeholder="WiFi Provider" class="w-full" />
+                        </div>
+                    </div>
+                    <div class="mt-4 space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Status</label>
+                            <select formControlName="status" class="w-full">
+                                <option value="">Select Status</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Debt">Debt</option>
+                            </select>
+                        </div>
+                    </div>
+                    </fieldset>
+                </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Phone Number</label>
-                <input formControlName="phone" type="text" placeholder="(123) 456-7890" class="w-full" />
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Zip Code</label>
-                <input formControlName="zipCode" type="text" placeholder="12345" class="w-full" />
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Status</label>
-                <select formControlName="status" class="w-full">
-                    <option value="">Select Status</option>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="Debt">Debt</option>
-                </select>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Notes</label>
-                <textarea formControlName="notes" rows="4" placeholder="Additional information about the client..." class="w-full"></textarea>
-            </div>
-
+                <fieldset class="border border-gray-200 rounded-lg px-4 pt-3 pb-4 w-full">
+                    <legend class="px-2 text-sm font-semibold text-gray-600 whitespace-nowrap">Notes</legend>
+                    <div>
+                        <textarea formControlName="notes" rows="4" placeholder="Additional information about the client..." class="w-full"></textarea>
+                    </div>
+                </fieldset>
+            </div>    
 
             <button type="submit" class="mt-4 px-4 py-2 bg-primary text-white rounded">Submit</button>
         </form>

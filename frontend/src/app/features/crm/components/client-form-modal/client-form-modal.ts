@@ -35,7 +35,10 @@ export class ClientFormModal {
       email: new FormControl(''),
       zipCode: new FormControl(''),
       notes: new FormControl(''),
-      subscriptions: new FormControl([]),
+      subscriptions: new FormGroup({
+        phone: new FormControl(''),
+        wifi: new FormControl(''),
+      }),
       status: new FormControl('Active'),
     });
   }
@@ -46,13 +49,27 @@ export class ClientFormModal {
   onSubmit() {
     if (this.clientForm.valid) {
       const formValue = this.clientForm.value;
+      const subscriptionValues = (formValue.subscriptions || {}) as {
+        phone?: string;
+        wifi?: string;
+      };
+      const subscriptions: { phone?: string; wifi?: string } = {};
+
+      if (subscriptionValues.phone) {
+        subscriptions.phone = subscriptionValues.phone;
+      }
+
+      if (subscriptionValues.wifi) {
+        subscriptions.wifi = subscriptionValues.wifi;
+      }
+
       const newClient: Client = {
         full_name: formValue.fullName,
         phone_number: formValue.phone,
         email: formValue.email,
         zip_code: formValue.zipCode,
         notes: formValue.notes,
-        subscriptions: formValue.subscriptions,
+        subscriptions: subscriptions,
         status: formValue.status,
         last_visit: new Date().toISOString(),
       };

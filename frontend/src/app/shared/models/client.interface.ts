@@ -9,7 +9,7 @@ export interface Client {
   zip_code?: string;
   notes?: string;
   
-  subscriptions?: Subscription[]; 
+  subscriptions?: Subscription[] | Record<string, string>;
 
   status?: 'Active' | 'Inactive' | 'Debt';
 

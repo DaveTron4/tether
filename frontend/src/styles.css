@@ -111,10 +111,28 @@
     }
 
     /* Layout helpers to keep footer at bottom and constrain its width */
-    .main-content-wrapper { @apply flex flex-col min-h-screen; }
-    main.dynamic-screen-area { @apply flex-1; }
+    .tether-app-container {
+        height: 100vh;
+        overflow: hidden;
+    }
 
-    .app-footer { @apply w-full; }
+    .app-sidebar-overlay {
+        height: 100vh;
+    }
+
+    .main-content-wrapper {
+        @apply flex flex-col w-full;
+        height: 100vh;
+    }
+
+    main.dynamic-screen-area {
+        @apply flex-1;
+        min-height: 0;
+    }
+
+    .app-footer {
+        @apply w-full;
+    }
     .app-footer .dashboard-container { @apply items-center; }
 
     /* Sidebar: icon-only collapsed, expands after 2s hover */
@@ -216,7 +234,7 @@
 
     /* Modal content box */
     .client-form-modal {
-        @apply relative p-6 bg-white rounded-lg shadow-lg w-full max-w-md mx-4;
+        @apply relative p-6 bg-white rounded-lg shadow-lg w-full max-w-4xl mx-4;
     }
 
     .app-footer {

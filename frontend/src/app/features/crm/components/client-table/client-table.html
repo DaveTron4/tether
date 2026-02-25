@@ -1,4 +1,4 @@
-<div class="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
+<div class="h-full max-h-full overflow-x-auto overflow-y-auto bg-white rounded-lg shadow border border-gray-200">
     <table class="w-full text-left text-sm text-text-main">
     
         <thead class="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold">
@@ -7,7 +7,6 @@
                 <th class="px-6 py-4">Contact</th>
                 <th class="px-6 py-4">Status</th>
                 <th class="px-6 py-4">Last Visit</th>
-                <th class="px-6 py-4 text-right">Actions</th>
             </tr>
         </thead>
 
@@ -20,7 +19,7 @@
                             <div class="w-8 h-8 rounded-full bg-primary-light text-primary flex items-center justify-center font-bold text-xs">
                                 {{ client.full_name.slice(0,2).toUpperCase() }}
                             </div>
-                            {{ client.full_name }}
+                            <a [routerLink]="['/clients', client.id]" class="text-primary hover:text-primary-dark transition-colors">{{ client.full_name }}</a>
                         </div>
                     </td>
 
@@ -46,13 +45,6 @@
 
                     <td class="px-6 py-4 text-gray-500">
                         {{ client.last_visit ? (client.last_visit | date:'MMM d, y, h:mm a') : 'Never' }}
-                    </td>
-
-                    <td class="px-6 py-4 text-right">
-                        <!-- On click route to client detail page -->
-                        <a [routerLink]="['/clients', client.id]" class="text-gray-400 hover:text-primary transition-colors p-2">
-                            <lucide-icon name="edit" class="w-4 h-4"></lucide-icon>
-                        </a>
                     </td>
                 </tr>
             } @empty {

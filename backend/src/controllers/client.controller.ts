@@ -34,7 +34,7 @@ const getClientById = async (req: Request, res: Response) => {
 // Create a new client
 const createClient = async (req: Request, res: Response) => {
   try {
-    const {full_name, phone_number, email, zip_code, status, subscriptions, notes, last_visit } = req.body;
+    const {full_name, email, phone_number, zip_code, status, subscriptions, notes, last_visit } = req.body;
     const result = await pool.query(
       'INSERT INTO clients (full_name, email, phone_number, zip_code, status, subscriptions, notes, last_visit) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
       [full_name, email, phone_number, zip_code, status, subscriptions || [], notes || '', last_visit]

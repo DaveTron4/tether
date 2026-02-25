@@ -1,4 +1,4 @@
-<div class="p-8 w-full max-w-7xl mx-auto">
+<div class="p-8 w-full max-w-7xl mx-auto h-full flex flex-col">
   
   <div class="flex justify-between items-center mb-6">
     <div>
@@ -11,7 +11,7 @@
     </button>
   </div>
 
-  <div class="mb-6 relative">
+  <div class="mb-6 relative shrink-0">
     <lucide-icon name="search" class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5"></lucide-icon>
     <input 
       type="text" 
@@ -21,10 +21,12 @@
     >
   </div>
 
-  <app-client-table 
-    [clients]="filteredClients()" 
-    (onEdit)="openEditModal($event)">
-  </app-client-table>
+  <div class="flex-1 min-h-0">
+    <app-client-table 
+      [clients]="filteredClients()" 
+      (onEdit)="openEditModal($event)">
+    </app-client-table>
+  </div>
 
   <app-client-form-modal *ngIf="showCreateModal()" (close)="closeCreateModal()"></app-client-form-modal>
 
