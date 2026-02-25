@@ -1,0 +1,11 @@
+.client-form-modal {
+	max-height: calc(100vh - 4rem);
+	overflow: hidden;
+}
+
+.client-form-modal > form,
+.client-form-modal form {
+	max-height: calc(100vh - 8rem);
+	overflow-y: auto;
+	padding-right: 0.25rem;
+}

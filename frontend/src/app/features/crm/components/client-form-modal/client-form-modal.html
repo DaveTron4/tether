@@ -9,17 +9,21 @@
                     <legend class="px-2 text-sm font-semibold text-gray-600 whitespace-nowrap">Personal Information</legend>
                     <div class="space-y-4">
                         <div>
+                            <label class="block text-sm font-medium mb-1">Full Name</label>
                             <input formControlName="fullName" type="text" placeholder="Full Name" class="w-full" />
                         </div>
     
                         <div>
+                            <label class="block text-sm font-medium mb-1">Email</label>
                             <input formControlName="email" type="email" placeholder="Email" class="w-full" />
                         </div>
             
                         <div>
+                            <label class="block text-sm font-medium mb-1">Phone Number</label>
                             <input formControlName="phone" type="text" placeholder="Phone Number" class="w-full" />
                         </div>
                         <div>
+                            <label class="block text-sm font-medium mb-1">Zip Code</label>
                             <input formControlName="zipCode" type="text" placeholder="Zip Code" class="w-full" />
                         </div>
                     </div>
@@ -27,18 +31,48 @@
     
                     <fieldset class="border border-gray-200 rounded-lg px-4 pt-3 pb-4 w-full">
                     <legend class="px-2 text-sm font-semibold text-gray-600 whitespace-nowrap">Subscriptions</legend>
-                    <div class="space-y-4" formGroupName="subscriptions">
-                        <div>
-                            <input formControlName="phone" type="text" placeholder="Phone Provider" class="w-full" />
+                    <div class="space-y-4 max-h-64 overflow-y-auto pr-1" formArrayName="subscriptions">
+                        <div
+                            *ngFor="let subscription of subscriptionControls; let i = index"
+                            [formGroupName]="i"
+                            class="grid grid-cols-1 gap-3 sm:grid-cols-2"
+                        >
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Service Type</label>
+                                <select formControlName="service_type" class="w-full">
+                                    <option value="Phone">Phone</option>
+                                    <option value="WiFi">WiFi</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Carrier</label>
+                                <input formControlName="carrier" type="text" placeholder="Carrier" class="w-full" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Plan Amount</label>
+                                <input formControlName="plan_amount" type="number" placeholder="0.00" class="w-full" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Payment Due Day</label>
+                                <input formControlName="payment_due_day" type="number" min="1" max="31" placeholder="15" class="w-full" />
+                            </div>
+                            <div class="sm:col-span-2">
+                                <button type="button" class="text-sm text-red-600" (click)="removeSubscription(i)">
+                                    Remove subscription
+                                </button>
+                            </div>
                         </div>
-
-                        <div>
-                            <input formControlName="wifi" type="text" placeholder="WiFi Provider" class="w-full" />
-                        </div>
+                        <button type="button" class="text-sm text-primary" (click)="addSubscription()">
+                            + Add subscription
+                        </button>
                     </div>
-                    <div class="mt-4 space-y-4">
+                    </fieldset>
+                </div>
+
+                <fieldset class="border border-gray-200 rounded-lg px-4 pt-3 pb-4 w-full">
+                    <legend class="px-2 text-sm font-semibold text-gray-600 whitespace-nowrap">Status</legend>
+                    <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium mb-1">Status</label>
                             <select formControlName="status" class="w-full">
                                 <option value="">Select Status</option>
                                 <option value="Active">Active</option>
@@ -47,8 +81,7 @@
                             </select>
                         </div>
                     </div>
-                    </fieldset>
-                </div>
+                </fieldset>
 
                 <fieldset class="border border-gray-200 rounded-lg px-4 pt-3 pb-4 w-full">
                     <legend class="px-2 text-sm font-semibold text-gray-600 whitespace-nowrap">Notes</legend>
