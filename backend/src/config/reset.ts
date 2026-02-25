@@ -53,7 +53,6 @@ const createClientsTable = async () => {
         email VARCHAR(100),
         zip_code VARCHAR(10),
         status VARCHAR(20) DEFAULT 'Active', -- 'Active', 'Inactive', 'Debt'
-        subscriptions JSONB, -- Store phone/wifi plans as JSON
         notes TEXT,
         last_visit TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -65,8 +64,8 @@ const createClientsTable = async () => {
 const seedClientsTable = async () => {
     // We insert a client and return the ID so we can give them subscriptions later
     await pool.query(`
-        INSERT INTO clients (full_name, phone_number, email, zip_code, status, subscriptions, notes, last_visit)
-        VALUES ('John Doe', '404-698-9528', 'john.doe@example.com', '30018', 'Active', '{"phone": "T-Mobile", "wifi": "Xfinity"}', 'Prefer text reminders', CURRENT_TIMESTAMP)
+        INSERT INTO clients (full_name, phone_number, email, zip_code, status, notes, last_visit)
+        VALUES ('John Doe', '404-698-9528', 'john.doe@example.com', '30018', 'Active', 'Prefer text reminders', CURRENT_TIMESTAMP)
     `);
     console.log("🌱 Clients seeded");
 };
@@ -97,23 +96,27 @@ const createSubscriptionsTable = async () => {
 };
 
 const seedSubscriptionsTable = async () => {
-    // Get John Doe's ID
-    const clientRes = await pool.query("SELECT id FROM clients WHERE full_name = 'John Doe' LIMIT 1");
-    const clientId = clientRes.rows[0].id;
+    const clientRes = await pool.query(
+        "SELECT id FROM clients WHERE full_name = 'John Doe' LIMIT 1"
+    );
+    const clientId = clientRes.rows[0]?.id;
 
-    // 1. Add a Phone Plan
+    if (!clientId) {
+        console.warn('⚠️ No client found for subscription seed');
+        return;
+    }
+
     await pool.query(`
         INSERT INTO subscriptions (client_id, service_type, carrier, plan_amount, payment_due_day)
         VALUES ($1, 'Phone', 'T-Mobile', 50.00, 15)
     `, [clientId]);
 
-    // 2. Add a WiFi Plan
     await pool.query(`
         INSERT INTO subscriptions (client_id, service_type, carrier, plan_amount, payment_due_day)
         VALUES ($1, 'WiFi', 'Xfinity', 89.99, 1)
     `, [clientId]);
 
-    console.log("🌱 Subscriptions seeded (Phone & WiFi)");
+    console.log("🌱 Subscriptions seeded (Phone & WiFi for John Doe)");
 };
 
 // ==========================================
@@ -225,6 +228,49 @@ const createSalesTables = async () => {
     console.log("🏗️ Sales tables created");
 };
 
+const seedSalesTables = async () => {
+    const userRes = await pool.query(
+        "SELECT id FROM users WHERE username = 'David' LIMIT 1"
+    );
+    const clientRes = await pool.query(
+        "SELECT id FROM clients WHERE full_name = 'John Doe' LIMIT 1"
+    );
+    const productRes = await pool.query(
+        "SELECT id, price FROM products WHERE barcode = 'GEN-WAL-IP15' LIMIT 1"
+    );
+
+    const userId = userRes.rows[0]?.id;
+    const clientId = clientRes.rows[0]?.id;
+    const productId = productRes.rows[0]?.id;
+    const productPrice = productRes.rows[0]?.price;
+
+    if (!userId || !clientId || !productId) {
+        console.warn('⚠️ Missing seed data for sales');
+        return;
+    }
+
+    const saleRes = await pool.query(
+        `INSERT INTO sales (user_id, client_id, total_amount, payment_method)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id`,
+        [userId, clientId, productPrice, 'Cash']
+    );
+
+    const saleId = saleRes.rows[0]?.id;
+    if (!saleId) {
+        console.warn('⚠️ Failed to seed sale item');
+        return;
+    }
+
+    await pool.query(
+        `INSERT INTO sale_items (sale_id, product_id, quantity, price_at_sale)
+         VALUES ($1, $2, $3, $4)`,
+        [saleId, productId, 1, productPrice]
+    );
+
+    console.log('🌱 Sales seeded (1 sale + 1 item)');
+};
+
 // ==========================================
 // 6. PAYMENT HISTORY (For Subscriptions)
 // ==========================================
@@ -244,6 +290,26 @@ const createPaymentHistoryTable = async () => {
     console.log("🏗️ Payment History table created");
 };
 
+const seedPaymentHistoryTable = async () => {
+    const subscriptionRes = await pool.query(
+        "SELECT id FROM subscriptions ORDER BY id ASC LIMIT 1"
+    );
+    const subscriptionId = subscriptionRes.rows[0]?.id;
+
+    if (!subscriptionId) {
+        console.warn('⚠️ No subscription found for payment history seed');
+        return;
+    }
+
+    await pool.query(
+        `INSERT INTO payment_history (subscription_id, amount_paid, status)
+         VALUES ($1, $2, $3)`,
+        [subscriptionId, 50.00, 'Paid']
+    );
+
+    console.log('🌱 Payment history seeded');
+};
+
 // ==========================================
 // 7. REPAIR TICKETS
 // ==========================================
@@ -257,11 +323,69 @@ const createRepairTicketsTable = async () => {
         issue_description TEXT,
         status VARCHAR(20) DEFAULT 'Intake',
         estimated_cost DECIMAL(10, 2),
+        parts_cost DECIMAL(10, 2) DEFAULT 0,
+        labor_cost DECIMAL(10, 2) DEFAULT 0,
+        charge_amount DECIMAL(10, 2) DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         completed_at TIMESTAMP
     );`;
     await pool.query(query);
     console.log("🏗️ Repair Tickets table created");
+};
+
+const createClientLtvView = async () => {
+    const query = `
+    DROP VIEW IF EXISTS client_lifetime_value;
+    CREATE VIEW client_lifetime_value AS
+    SELECT
+        c.id AS client_id,
+        COALESCE(sales_totals.sales_total, 0)
+            + COALESCE(repair_totals.repair_total, 0)
+            + COALESCE(payment_totals.subscription_total, 0) AS lifetime_value,
+        COALESCE(sales_totals.sales_total, 0) AS sales_total,
+        COALESCE(repair_totals.repair_total, 0) AS repair_total,
+        COALESCE(payment_totals.subscription_total, 0) AS subscription_total
+    FROM clients c
+    LEFT JOIN (
+        SELECT client_id, SUM(total_amount) AS sales_total
+        FROM sales
+        GROUP BY client_id
+    ) sales_totals ON sales_totals.client_id = c.id
+    LEFT JOIN (
+        SELECT client_id, SUM(charge_amount) AS repair_total
+        FROM repair_tickets
+        GROUP BY client_id
+    ) repair_totals ON repair_totals.client_id = c.id
+    LEFT JOIN (
+        SELECT s.client_id, SUM(ph.amount_paid) AS subscription_total
+        FROM payment_history ph
+        JOIN subscriptions s ON s.id = ph.subscription_id
+        GROUP BY s.client_id
+    ) payment_totals ON payment_totals.client_id = c.id;
+    `;
+    await pool.query(query);
+    console.log('🏗️ Client lifetime value view created');
+};
+
+const seedRepairTicketsTable = async () => {
+    const clientRes = await pool.query(
+        "SELECT id FROM clients WHERE full_name = 'John Doe' LIMIT 1"
+    );
+    const clientId = clientRes.rows[0]?.id;
+
+    if (!clientId) {
+        console.warn('⚠️ No client found for repair ticket seed');
+        return;
+    }
+
+    await pool.query(
+        `INSERT INTO repair_tickets 
+        (client_id, device_model, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [clientId, 'iPhone 12', 'Screen cracked, touch unresponsive', 'In Progress', 149.00, 45.00, 30.00, 149.00]
+    );
+
+    console.log('🌱 Repair tickets seeded');
 };
 
 
@@ -280,6 +404,7 @@ const reset = async () => {
         await createSalesTables();      // Depends on Users, Clients
         await createPaymentHistoryTable(); // Depends on Subscriptions
         await createRepairTicketsTable();  // Depends on Clients
+        await createClientLtvView();
 
         console.log("--------------------------------");
 
@@ -288,6 +413,9 @@ const reset = async () => {
         await seedClientsTable();
         await seedSubscriptionsTable();
         await seedProductsTable();
+        await seedSalesTables();
+        await seedPaymentHistoryTable();
+        await seedRepairTicketsTable();
 
         console.log("✅ Database Reset Complete!");
         

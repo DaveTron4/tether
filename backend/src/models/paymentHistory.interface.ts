@@ -7,7 +7,5 @@ export interface PaymentHistory {
   
   amount_paid: number;
   status: 'Paid' | 'Failed'; 
-
-  error_message?: string;
   created_at?: string;
 }

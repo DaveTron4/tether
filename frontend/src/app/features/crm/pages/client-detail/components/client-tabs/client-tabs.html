@@ -1,0 +1,29 @@
+<div class="tabs">
+  <button 
+    (click)="activeTab.set('overview')" 
+    [class.active]="activeTab() === 'overview'">
+    Overview
+  </button>
+  <button 
+    (click)="activeTab.set('subscriptions')" 
+    [class.active]="activeTab() === 'subscriptions'">
+    Subscriptions
+  </button>
+  <button 
+    (click)="activeTab.set('financials')" 
+    [class.active]="activeTab() === 'financials'">
+    Financials
+  </button>
+</div>
+
+<div class="tab-content">
+  @if (activeTab() === 'overview') {
+    <app-tab-overview [client]="client"></app-tab-overview>
+  }
+  @if (activeTab() === 'subscriptions') {
+    <app-tab-devices [client]="client"></app-tab-devices>
+  }
+  @if (activeTab() === 'financials') {
+    <app-tab-financials [client]="client"></app-tab-financials>
+  }
+</div>

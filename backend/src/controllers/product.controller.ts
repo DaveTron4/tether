@@ -34,7 +34,7 @@ const getProductById = async (req: Request, res: Response) => {
 // Create new product
 const createProduct = async (req: Request, res: Response) => {
     try {
-        const { name, barcode, category, is_generic, price, cost, stock, min_stock_level, properties } = req.body;
+        const { name, barcode, category, is_generic, price, cost, stock, stock_quantity, min_stock_level, properties } = req.body;
 
         // Validate required fields
         if (!name || !barcode || !price) {
@@ -48,8 +48,8 @@ const createProduct = async (req: Request, res: Response) => {
         }
 
         const result = await pool.query(
-            'INSERT INTO products (name, barcode, category, is_generic, price, cost, stock, min_stock_level, properties) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
-            [name, barcode, category, is_generic, price, cost || 0, stock || 0, min_stock_level|| 5, properties || {}]
+            'INSERT INTO products (name, barcode, category, is_generic, price, cost, stock_quantity, min_stock_level, properties) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+            [name, barcode, category, is_generic, price, cost || 0, stock_quantity ?? stock ?? 0, min_stock_level || 5, properties || {}]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -77,7 +77,7 @@ const deleteProductById = async (req: Request, res: Response) => {
 const updateProductById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { name, barcode, category, is_generic, price, cost, stock, min_stock_level, properties } = req.body;
+        const { name, barcode, category, is_generic, price, cost, stock, stock_quantity, min_stock_level, properties } = req.body;
         const result = await pool.query(
             `UPDATE products 
              SET name = COALESCE($1, name),
@@ -86,12 +86,12 @@ const updateProductById = async (req: Request, res: Response) => {
                     is_generic = COALESCE($4, is_generic),
                     price = COALESCE($5, price),
                     cost = COALESCE($6, cost),
-                    stock = COALESCE($7, stock),
+                    stock_quantity = COALESCE($7, stock_quantity),
                     min_stock_level = COALESCE($8, min_stock_level),
                     properties = COALESCE($9, properties)
                 WHERE id = $10
                 RETURNING *`,
-            [name, barcode, category, is_generic, price, cost, stock, min_stock_level, properties, id]
+            [name, barcode, category, is_generic, price, cost, stock_quantity ?? stock, min_stock_level, properties, id]
         );
 
         if (result.rows.length === 0) {

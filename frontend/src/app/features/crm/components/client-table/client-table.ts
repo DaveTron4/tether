@@ -1,7 +1,11 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+
+// Icons
 import { LucideAngularModule, MoreHorizontal, Edit, Trash2, LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
+
+// Interfaces
 import { Client } from '../../../../shared/models/client.interface';
 
 @Component({

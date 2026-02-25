@@ -59,7 +59,7 @@ const getRepairsByClientId = async (req: Request, res: Response) => {
 // Create new repair ticket
 const createRepair = async (req: Request, res: Response) => {
     try {
-        const { client_id, device_model, issue_description, status, estimated_cost } = req.body;
+        const { client_id, device_model, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount } = req.body;
 
         // Validate required fields
         if (!client_id || !device_model || !issue_description) {
@@ -67,8 +67,8 @@ const createRepair = async (req: Request, res: Response) => {
         }
 
         const result = await pool.query(
-            'INSERT INTO repair_tickets (client_id, device_model, issue_description, status, estimated_cost) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [client_id, device_model, issue_description, status || 'Pending', estimated_cost || 0]
+            'INSERT INTO repair_tickets (client_id, device_model, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+            [client_id, device_model, issue_description, status || 'Intake', estimated_cost || 0, parts_cost || 0, labor_cost || 0, charge_amount || 0]
         );
 
         res.status(201).json(result.rows[0]);
@@ -82,15 +82,18 @@ const createRepair = async (req: Request, res: Response) => {
 const updateRepair = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { device_model, issue_description, status, estimated_cost } = req.body;
+        const { device_model, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount } = req.body;
 
         const result = await pool.query(
             `UPDATE repair_tickets SET device_model = COALESCE($1, device_model), 
                 issue_description = COALESCE($2, issue_description), 
                 status = COALESCE($3, status), 
-                estimated_cost = COALESCE($4, estimated_cost) 
-            WHERE id = $5 RETURNING *`,
-            [device_model, issue_description, status, estimated_cost, id]
+                estimated_cost = COALESCE($4, estimated_cost),
+                parts_cost = COALESCE($5, parts_cost),
+                labor_cost = COALESCE($6, labor_cost),
+                charge_amount = COALESCE($7, charge_amount)
+            WHERE id = $8 RETURNING *`,
+            [device_model, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount, id]
         );
 
         if (result.rows.length === 0) {

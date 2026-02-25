@@ -34,10 +34,10 @@ const getClientById = async (req: Request, res: Response) => {
 // Create a new client
 const createClient = async (req: Request, res: Response) => {
   try {
-    const {full_name, email, phone_number, zip_code, status, subscriptions, notes, last_visit } = req.body;
+    const {full_name, email, phone_number, zip_code, status, notes, last_visit } = req.body;
     const result = await pool.query(
-      'INSERT INTO clients (full_name, email, phone_number, zip_code, status, subscriptions, notes, last_visit) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-      [full_name, email, phone_number, zip_code, status, subscriptions || [], notes || '', last_visit]
+      'INSERT INTO clients (full_name, email, phone_number, zip_code, status, notes, last_visit) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [full_name, email, phone_number, zip_code, status, notes || '', last_visit]
     );
     
     res.status(201).json(result.rows[0]);
@@ -51,11 +51,11 @@ const createClient = async (req: Request, res: Response) => {
 const updateClient = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { full_name, phone_number, email, zip_code, status, subscriptions, notes, last_visit } = req.body;
+    const { full_name, phone_number, email, zip_code, status, notes, last_visit } = req.body;
     
     const result = await pool.query(
-      'UPDATE clients SET full_name = $1, phone_number = $2, email = $3, zip_code = $4, status = $5, subscriptions = $6, notes = $7, last_visit = $8 WHERE id = $9 RETURNING *',
-      [full_name, phone_number, email, zip_code, status || 'Active', subscriptions || [], notes || '', last_visit || new Date().toISOString(), id]
+      'UPDATE clients SET full_name = $1, phone_number = $2, email = $3, zip_code = $4, status = $5, notes = $6, last_visit = $7 WHERE id = $8 RETURNING *',
+      [full_name, phone_number, email, zip_code, status || 'Active', notes || '', last_visit || new Date().toISOString(), id]
     );
     
     if (result.rows.length === 0) {
