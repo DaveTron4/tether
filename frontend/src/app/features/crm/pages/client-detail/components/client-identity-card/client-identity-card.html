@@ -1,27 +1,53 @@
 <div class="flex flex-row gap-3">
     <!-- Personal Information Card -->
-     <div class="flex flex-col gap-4 p-6 bg-white rounded-lg shadow border border-gray-200 w-full max-w-sm">
-         <div class="flex flex-row items-stretch gap-4">
-             <div class="aspect-square rounded-full bg-primary-light text-primary flex items-center justify-center font-bold text-xl">
-                 {{ client?.full_name?.slice(0,2)?.toUpperCase() }}
-             </div>
-             <div class="flex flex-col gap-1 flex-1">
-                 <h1 class="text-xl font-bold text-gray-900">{{ client?.full_name }}</h1>
-                 <div class="flex flex-row gap-1">
-                     <lucide-icon name="phone" class="w-4 h-4 text-gray-400 inline-block mr-1"></lucide-icon>
-                     <p class="text-sm text-gray-500">{{ client?.phone_number }}</p>
-                 </div>
-                 <div class="flex flex-row gap-1">
-                     <lucide-icon name="mail" class="w-4 h-4 text-gray-400 inline-block mr-1"></lucide-icon>
-                     <p class="text-sm text-gray-500">{{ client?.email }}</p>
-                 </div>
-             </div>
-         </div>
-         <hr class="border-gray-200">
-         <div class="">
+        <div class="flex flex-col gap-4 p-6 bg-white rounded-lg shadow border border-gray-200 w-full max-w-sm">
+            <div class="flex flex-row items-stretch gap-4">
+                <div class="aspect-square rounded-full bg-primary-light text-primary flex items-center justify-center font-bold text-xl">
+                    {{ client?.full_name?.slice(0,2)?.toUpperCase() }}
+                </div>
+                <div class="flex flex-col gap-1 flex-1">
+                    <h1 class="text-xl font-bold text-gray-900">{{ client?.full_name }}</h1>
+                    <div class="flex flex-row gap-1">
+                        <lucide-icon name="phone" class="w-4 h-4 text-gray-400 inline-block mr-1"></lucide-icon>
+                        <p class="text-sm text-gray-500">{{ client?.phone_number }}</p>
+                    </div>
+                    <div class="flex flex-row gap-1">
+                        <lucide-icon name="mail" class="w-4 h-4 text-gray-400 inline-block mr-1"></lucide-icon>
+                        <p class="text-sm text-gray-500">{{ client?.email }}</p>
+                    </div>
+                </div>
+            </div>
+            <hr class="border-gray-200">
+            <div class="flex flex-col gap-4">
+                <!-- Balance Due Section -->
+                <div class="flex flex-col gap-1">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Balance Due</p>
+                    <div *ngIf="loading" class="text-sm text-gray-400">Loading...</div>
+                    <div *ngIf="!loading && summary" class="text-2xl font-bold text-red-600">${{ summary.balanceDue.toFixed(2) }}</div>
+                    <div *ngIf="!loading && !summary" class="text-sm text-gray-400">—</div>
+                </div>
 
-         </div>
-     </div>
+                <!-- Lifetime Value Section -->
+                <div class="flex flex-col gap-1">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Lifetime Value</p>
+                    <div *ngIf="loading" class="text-sm text-gray-400">Loading...</div>
+                    <div *ngIf="!loading && summary" class="text-2xl font-bold text-green-600">${{ summary.lifetimeValue.toFixed(2) }}</div>
+                    <div *ngIf="!loading && !summary" class="text-sm text-gray-400">—</div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div *ngIf="summary" class="flex flex-row gap-4 pt-2 border-t border-gray-200">
+                    <div class="flex flex-col gap-1">
+                        <p class="text-xs text-gray-500">Active Plans</p>
+                        <p class="text-lg font-semibold text-gray-900">{{ summary.activeSubscriptions }}</p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <p class="text-xs text-gray-500">Repairs</p>
+                        <p class="text-lg font-semibold text-gray-900">{{ summary.totalRepairs }}</p>
+                    </div>
+                </div>
+            </div>
+    </div>
 
     <!-- Client Tabs -->
     <div>

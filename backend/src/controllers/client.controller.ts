@@ -86,10 +86,52 @@ const deleteClient = async (req: Request, res: Response) => {
   }
 };
 
+// Get client summary (lifetime value and balance due)
+const getClientSummary = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Single optimized query with proper JOINs (not subqueries)
+    const result = await pool.query(
+      `
+      SELECT
+        COALESCE(clv.lifetime_value, 0)::numeric as lifetime_value,
+        COALESCE(SUM(CASE WHEN s.status != 'Paid' THEN s.plan_amount ELSE 0 END), 0)::numeric +
+        COALESCE(SUM(CASE WHEN rt.status NOT IN ('Done', 'Picked Up') THEN rt.charge_amount ELSE 0 END), 0)::numeric as balance_due,
+        COUNT(DISTINCT CASE WHEN s.is_active = TRUE THEN s.id END)::integer as active_subscriptions,
+        COUNT(DISTINCT rt.id)::integer as total_repairs
+      FROM clients c
+      LEFT JOIN client_lifetime_value clv ON c.id = clv.client_id
+      LEFT JOIN subscriptions s ON c.id = s.client_id
+      LEFT JOIN repair_tickets rt ON c.id = rt.client_id
+      WHERE c.id = $1
+      GROUP BY c.id, clv.lifetime_value
+      `,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Client not found' });
+    }
+
+    const row = result.rows[0];
+    res.status(200).json({
+      lifetimeValue: parseFloat(row.lifetime_value),
+      balanceDue: parseFloat(row.balance_due),
+      activeSubscriptions: parseInt(row.active_subscriptions, 10),
+      totalRepairs: parseInt(row.total_repairs, 10),
+    });
+  } catch (err) {
+    console.error('Error fetching client summary:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 export default {
   getAllClients,
   getClientById,
   createClient,
   updateClient,
   deleteClient,
+  getClientSummary,
 };

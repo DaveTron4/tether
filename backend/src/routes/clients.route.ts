@@ -8,6 +8,9 @@ const router = Router();
 // Gets all clients
 router.get('/', clientController.getAllClients);
 
+// Gets client summary (must be before /:id to avoid conflict)
+router.get('/:id/summary', clientController.getClientSummary);
+
 // Gets a single client by ID
 router.get('/:id', clientController.getClientById);
 

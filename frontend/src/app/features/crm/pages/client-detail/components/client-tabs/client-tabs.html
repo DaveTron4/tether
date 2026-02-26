@@ -5,9 +5,9 @@
     Overview
   </button>
   <button 
-    (click)="activeTab.set('subscriptions')" 
-    [class.active]="activeTab() === 'subscriptions'">
-    Subscriptions
+    (click)="activeTab.set('devices')" 
+    [class.active]="activeTab() === 'devices'">
+    Devices
   </button>
   <button 
     (click)="activeTab.set('financials')" 
@@ -20,7 +20,7 @@
   @if (activeTab() === 'overview') {
     <app-tab-overview [client]="client"></app-tab-overview>
   }
-  @if (activeTab() === 'subscriptions') {
+  @if (activeTab() === 'devices') {
     <app-tab-devices [client]="client"></app-tab-devices>
   }
   @if (activeTab() === 'financials') {
