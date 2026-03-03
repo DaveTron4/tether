@@ -110,6 +110,30 @@
         @apply p-6 rounded-xl border border-gray-200 bg-card-white text-text-main shadow-sm transition-shadow duration-300 cursor-pointer hover:border-primary/50 hover:bg-primary-light/10;
     }
 
+    /* Tabs Container - Reusable card-style container for tab sections */
+    .tabs-container {
+        @apply p-6 bg-white rounded-lg shadow border border-gray-200 w-full;
+    }
+
+    /* Tab Navigation Buttons */
+    .tab-nav {
+        @apply flex flex-row gap-2 border-b border-gray-200 pb-4;
+    }
+
+    .tab-button {
+        @apply px-4 py-2 font-medium text-gray-700 rounded-t-lg transition-all duration-200;
+        @apply border-b-2 border-transparent hover:text-gray-900 hover:bg-gray-50;
+    }
+
+    .tab-button.active {
+        @apply border-b-2 border-primary text-primary bg-gray-50;
+    }
+
+    /* Tab Content Area */
+    .tab-content {
+        @apply pt-6;
+    }
+
     /* Layout helpers to keep footer at bottom and constrain its width */
     .tether-app-container {
         height: 100vh;
