@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import authController from '../controllers/auth.controller.js';
+import { verifyToken, isAdmin } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
@@ -8,6 +9,6 @@ const router = Router();
 router.post('/login', authController.login);
 
 // User registration
-router.post('/register', authController.register);
+router.post('/register', verifyToken, isAdmin, authController.register);
 
 export default router;
