@@ -1,14 +1,15 @@
-// backend/src/controllers/sale.controller.ts
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
+import type { AuthRequest } from '../models/authRequest.interface.js';
 import { pool } from '../config/database.js';
 
 // Controller functions for managing sales
 
 // Create a new Sale (Checkout Process)
-const createSale = async (req: Request, res: Response) => {
+const createSale = async (req: AuthRequest, res: Response) => {
     const client = await pool.connect(); 
     
     try {
+        if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
         const { user_id, client_id, payment_method, items, card_token } = req.body;
 
         // Calculate Total
@@ -23,10 +24,10 @@ const createSale = async (req: Request, res: Response) => {
         
         // Insert Header
         const saleRes = await client.query(
-            `INSERT INTO sales (user_id, client_id, total_amount, payment_method)
-             VALUES ($1, $2, $3, $4)
+            `INSERT INTO sales (tenant_id, user_id, client_id, total_amount, payment_method)
+             VALUES ($1, $2, $3, $4, $5)
              RETURNING id, created_at`,
-            [user_id, client_id, total_amount, payment_method]
+            [req.user.tenant_id, user_id, client_id, total_amount, payment_method]
         );
         const saleId = saleRes.rows[0].id;
         const saleDate = saleRes.rows[0].created_at;
@@ -40,8 +41,8 @@ const createSale = async (req: Request, res: Response) => {
             );
 
             await client.query(
-                `UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2`,
-                [item.quantity, item.product_id]
+                `UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2 AND tenant_id = $3`,
+                [item.quantity, item.product_id, req.user.tenant_id]
             );
         }
 
@@ -50,7 +51,7 @@ const createSale = async (req: Request, res: Response) => {
         // =========================================================
         
         if (payment_method === 'Card') {
-            // 🛑 THIS IS THE CHECKPOINT
+            // THIS IS THE CHECKPOINT
             // If this line fails (card declined), code jumps to CATCH -> ROLLBACK.
             // Result: Customer not charged, Database wiped clean. Safe.
             
@@ -61,7 +62,7 @@ const createSale = async (req: Request, res: Response) => {
             //     description: `Sale ID: ${saleId}`
             // });
             
-            console.log(`💳 Mocking Card Charge for Sale ${saleId}... Success.`);
+            console.log(`Mocking Card Charge for Sale ${saleId}... Success.`);
         }
 
         // =========================================================
@@ -102,14 +103,16 @@ const createSale = async (req: Request, res: Response) => {
 };
 
 // Get all sales (for reporting)
-const getAllSales = async (req: Request, res: Response) => {
+const getAllSales = async (req: AuthRequest, res: Response) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
         const result = await pool.query(`
             SELECT s.id, s.total_amount, s.payment_method, s.created_at, u.username as employee
             FROM sales s
             JOIN users u ON s.user_id = u.id
+            WHERE s.tenant_id = $1
             ORDER BY s.created_at DESC
-        `);
+        `, [req.user.tenant_id]);
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: 'Server error' });
@@ -117,12 +120,13 @@ const getAllSales = async (req: Request, res: Response) => {
 };
 
 // Get sale details by ID (the receipt view)
-const getSaleById = async (req: Request, res: Response) => {
+const getSaleById = async (req: AuthRequest, res: Response) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
         const { id } = req.params;
 
         // Get the Header
-        const saleRes = await pool.query('SELECT * FROM sales WHERE id = $1', [id]);
+        const saleRes = await pool.query('SELECT * FROM sales WHERE id = $1 AND tenant_id = $2', [id, req.user.tenant_id]);
         if (saleRes.rows.length === 0) return res.status(404).json({ error: 'Sale not found' });
 
         // Get the Items

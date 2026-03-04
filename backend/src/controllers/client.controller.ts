@@ -1,12 +1,14 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
+import type { AuthRequest } from '../models/authRequest.interface.js';
 import { pool } from '../config/database.js';
 
 // Controller functions for managing clients
 
 // Get all clients
-const getAllClients = async (req: Request, res: Response) => {
+const getAllClients = async (req: AuthRequest, res: Response) => {
   try {
-    const result = await pool.query('SELECT * FROM clients ORDER BY id ASC');
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+    const result = await pool.query('SELECT * FROM clients WHERE tenant_id = $1 ORDER BY id ASC', [req.user.tenant_id]);
     res.status(200).json(result.rows);
   } catch (err) {
     console.error('Error fetching clients:', err);
@@ -15,10 +17,11 @@ const getAllClients = async (req: Request, res: Response) => {
 };
 
 // Get a single client by ID
-const getClientById = async (req: Request, res: Response) => {
+const getClientById = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const result = await pool.query('SELECT * FROM clients WHERE id = $1', [id]);
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+    const result = await pool.query('SELECT * FROM clients WHERE id = $1 AND tenant_id = $2', [id, req.user.tenant_id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Client not found' });
@@ -32,12 +35,13 @@ const getClientById = async (req: Request, res: Response) => {
 };
 
 // Create a new client
-const createClient = async (req: Request, res: Response) => {
+const createClient = async (req: AuthRequest, res: Response) => {
   try {
     const {full_name, email, phone_number, zip_code, status, notes, last_visit } = req.body;
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
     const result = await pool.query(
-      'INSERT INTO clients (full_name, email, phone_number, zip_code, status, notes, last_visit) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-      [full_name, email, phone_number, zip_code, status, notes || '', last_visit]
+      'INSERT INTO clients (tenant_id, full_name, email, phone_number, zip_code, status, notes, last_visit) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [req.user.tenant_id, full_name, email, phone_number, zip_code, status, notes || '', last_visit]
     );
     
     res.status(201).json(result.rows[0]);
@@ -48,14 +52,15 @@ const createClient = async (req: Request, res: Response) => {
 };
 
 // Update an existing client
-const updateClient = async (req: Request, res: Response) => {
+const updateClient = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { full_name, phone_number, email, zip_code, status, notes, last_visit } = req.body;
     
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
     const result = await pool.query(
-      'UPDATE clients SET full_name = $1, phone_number = $2, email = $3, zip_code = $4, status = $5, notes = $6, last_visit = $7 WHERE id = $8 RETURNING *',
-      [full_name, phone_number, email, zip_code, status || 'Active', notes || '', last_visit || new Date().toISOString(), id]
+      'UPDATE clients SET full_name = $1, phone_number = $2, email = $3, zip_code = $4, status = $5, notes = $6, last_visit = $7 WHERE id = $8 AND tenant_id = $9 RETURNING *',
+      [full_name, phone_number, email, zip_code, status || 'Active', notes || '', last_visit || new Date().toISOString(), id, req.user.tenant_id]
     );
     
     if (result.rows.length === 0) {
@@ -70,10 +75,11 @@ const updateClient = async (req: Request, res: Response) => {
 };
 
 // Delete a client
-const deleteClient = async (req: Request, res: Response) => {
+const deleteClient = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const result = await pool.query('DELETE FROM clients WHERE id = $1 RETURNING *', [id]);
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+    const result = await pool.query('DELETE FROM clients WHERE id = $1 AND tenant_id = $2 RETURNING *', [id, req.user.tenant_id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Client not found' });
@@ -87,8 +93,9 @@ const deleteClient = async (req: Request, res: Response) => {
 };
 
 // Get client summary (lifetime value and balance due)
-const getClientSummary = async (req: Request, res: Response) => {
+const getClientSummary = async (req: AuthRequest, res: Response) => {
   try {
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
     const { id } = req.params;
 
     // Single optimized query with proper JOINs (not subqueries)
@@ -101,13 +108,13 @@ const getClientSummary = async (req: Request, res: Response) => {
         COUNT(DISTINCT CASE WHEN s.is_active = TRUE THEN s.id END)::integer as active_subscriptions,
         COUNT(DISTINCT rt.id)::integer as total_repairs
       FROM clients c
-      LEFT JOIN client_lifetime_value clv ON c.id = clv.client_id
-      LEFT JOIN subscriptions s ON c.id = s.client_id
-      LEFT JOIN repair_tickets rt ON c.id = rt.client_id
-      WHERE c.id = $1
+      LEFT JOIN client_lifetime_value clv ON c.id = clv.client_id AND clv.tenant_id = $2
+      LEFT JOIN subscriptions s ON c.id = s.client_id AND s.tenant_id = $2
+      LEFT JOIN repair_tickets rt ON c.id = rt.client_id AND rt.tenant_id = $2
+      WHERE c.id = $1 AND c.tenant_id = $2
       GROUP BY c.id, clv.lifetime_value
       `,
-      [id]
+      [id, req.user.tenant_id]
     );
 
     if (result.rows.length === 0) {

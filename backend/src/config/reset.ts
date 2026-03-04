@@ -13,6 +13,67 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // ==========================================
+// 1. TENANTS
+// ==========================================
+const createTenantsTable = async () => {
+    const query = `
+    DROP TABLE IF EXISTS tenants CASCADE;
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+    CREATE TABLE IF NOT EXISTS tenants (
+        -- Each store/tenant in the system
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+        -- BASIC INFO
+        store_name VARCHAR(255) NOT NULL,
+        subdomain VARCHAR(100) UNIQUE NOT NULL, 
+
+        -- BRANDING
+        logo_url TEXT,
+        theme_primary_color VARCHAR(7) DEFAULT '#454796',
+        theme_secondary_color VARCHAR(7) DEFAULT '#CCAF2B',
+
+        -- CONTACT & LOCATION
+        contact_email VARCHAR(100),
+        contact_phone VARCHAR(20),
+        address_line1 VARCHAR(255),
+        address_city VARCHAR(100),
+        address_state VARCHAR(100),
+        address_zip VARCHAR(20),
+
+        -- 4. BILLING & SUBSCRIPTION
+        stripe_customer_id VARCHAR(255) UNIQUE,
+        stripe_subscription_id VARCHAR(255) UNIQUE,
+        subscription_status VARCHAR(50) DEFAULT 'trialing', -- 'active', 'past_due', 'canceled'
+        subscription_tier VARCHAR(50) DEFAULT 'pro_cloud',  -- 'local_basic', 'pro_cloud'
+        
+        -- 5. STORE CONFIGURATION
+        tax_rate DECIMAL(5,4) DEFAULT 0.0800, -- e.g., 8% local sales tax
+        currency VARCHAR(3) DEFAULT 'USD',
+        
+        -- 6. TIMESTAMPS
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+    `;
+    await pool.query(query);
+    console.log("🏗️ Tenants table created");
+};
+
+const seedTenantsTable = async () => {
+    await pool.query(`
+        INSERT INTO tenants (store_name, subdomain, contact_email, contact_phone, address_line1, address_city, address_state, address_zip)
+        VALUES ('Tether Tech Repair', 'tether', 'info@tether.com', '404-123-4567', '123 Main St', 'Atlanta', 'GA', '30018')
+    `);
+    console.log("🌱 Tenants seeded");
+};
+
+const getTenantId = async () => {
+    const res = await pool.query("SELECT id FROM tenants WHERE subdomain = 'tether' LIMIT 1");
+    return res.rows[0]?.id;
+};
+
+// ==========================================
 // 1. USERS (Admins & Employees)
 // ==========================================
 const createUsersTable = async () => {
@@ -20,6 +81,7 @@ const createUsersTable = async () => {
     DROP TABLE IF EXISTS users CASCADE;
     CREATE TABLE users (
         id SERIAL PRIMARY KEY,
+        tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
         username VARCHAR(50) UNIQUE NOT NULL,
         email VARCHAR(100) UNIQUE,
         password_hash VARCHAR(255) NOT NULL,
@@ -32,12 +94,13 @@ const createUsersTable = async () => {
 };
 
 const seedUsersTable = async () => {
+    const tenantId = await getTenantId();
     const password = await bcrypt.hash(process.env.ADMIN_PASSWORD as string, 10);
     await pool.query(`
-        INSERT INTO users (username, password_hash, full_name, email, role)
-        VALUES ($1, $2, $3, $4, $5)
-    `, ['David', password, 'Master Admin', 'david@tether.com', 'admin']);
-    console.log("🌱 Users seeded (Admin created)");
+        INSERT INTO users (tenant_id, username, password_hash, full_name, email, role)
+        VALUES ($1, $2, $3, $4, $5, $6)
+    `, [tenantId, 'David', password, 'David Admin', 'david@tether.com', 'superadmin']);
+    console.log("🌱 Users seeded (Super Admin created)");
 };
 
 // ==========================================
@@ -48,6 +111,7 @@ const createClientsTable = async () => {
     DROP TABLE IF EXISTS clients CASCADE;
     CREATE TABLE clients (
         id SERIAL PRIMARY KEY,
+        tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
         full_name VARCHAR(100) NOT NULL,
         phone_number VARCHAR(20),
         email VARCHAR(100),
@@ -62,11 +126,11 @@ const createClientsTable = async () => {
 };
 
 const seedClientsTable = async () => {
-    // We insert a client and return the ID so we can give them subscriptions later
+    const tenantId = await getTenantId();
     await pool.query(`
-        INSERT INTO clients (full_name, phone_number, email, zip_code, status, notes, last_visit)
-        VALUES ('John Doe', '404-698-9528', 'john.doe@example.com', '30018', 'Active', 'Prefer text reminders', CURRENT_TIMESTAMP)
-    `);
+        INSERT INTO clients (tenant_id, full_name, phone_number, email, zip_code, status, notes, last_visit)
+        VALUES ($1, 'John Doe', '404-698-9528', 'john.doe@example.com', '30018', 'Active', 'Prefer text reminders', CURRENT_TIMESTAMP)
+    `, [tenantId]);
     console.log("🌱 Clients seeded");
 };
 
@@ -78,6 +142,7 @@ const createSubscriptionsTable = async () => {
     DROP TABLE IF EXISTS subscriptions CASCADE;
     CREATE TABLE subscriptions (
         id SERIAL PRIMARY KEY,
+        tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
         client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
         
         service_type VARCHAR(20) NOT NULL, -- 'Phone' or 'WiFi'
@@ -96,6 +161,7 @@ const createSubscriptionsTable = async () => {
 };
 
 const seedSubscriptionsTable = async () => {
+    const tenantId = await getTenantId();
     const clientRes = await pool.query(
         "SELECT id FROM clients WHERE full_name = 'John Doe' LIMIT 1"
     );
@@ -107,14 +173,14 @@ const seedSubscriptionsTable = async () => {
     }
 
     await pool.query(`
-        INSERT INTO subscriptions (client_id, service_type, carrier, plan_amount, payment_due_day)
-        VALUES ($1, 'Phone', 'T-Mobile', 50.00, 15)
-    `, [clientId]);
+        INSERT INTO subscriptions (tenant_id, client_id, service_type, carrier, plan_amount, payment_due_day)
+        VALUES ($1, $2, 'Phone', 'T-Mobile', 50.00, 15)
+    `, [tenantId, clientId]);
 
     await pool.query(`
-        INSERT INTO subscriptions (client_id, service_type, carrier, plan_amount, payment_due_day)
-        VALUES ($1, 'WiFi', 'Xfinity', 89.99, 1)
-    `, [clientId]);
+        INSERT INTO subscriptions (tenant_id, client_id, service_type, carrier, plan_amount, payment_due_day)
+        VALUES ($1, $2, 'WiFi', 'Xfinity', 89.99, 1)
+    `, [tenantId, clientId]);
 
     console.log("🌱 Subscriptions seeded (Phone & WiFi for John Doe)");
 };
@@ -127,6 +193,7 @@ const createProductsTable = async () => {
     DROP TABLE IF EXISTS products CASCADE;
     CREATE TABLE products (
         id SERIAL PRIMARY KEY,
+        tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
         name VARCHAR(255) NOT NULL,
         barcode VARCHAR(100) UNIQUE NOT NULL,
         category VARCHAR(50) NOT NULL,
@@ -143,30 +210,31 @@ const createProductsTable = async () => {
 };
 
 const seedProductsTable = async () => {
+    const tenantId = await getTenantId();
     // 1. Generic Wallet Case for iPhone 15
-    // We give it a specific internal barcode 'GEN-WAL-IP15'
     await pool.query(`
         INSERT INTO products 
-        (name, barcode, category, is_generic, price, cost, stock_quantity, properties)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        (tenant_id, name, barcode, category, is_generic, price, cost, stock_quantity, properties)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `, [
-        'Wallet Case (iPhone 15)', // Specific Name
-        'GEN-WAL-IP15',            // Specific Internal Barcode
+        tenantId,
+        'Wallet Case (iPhone 15)',
+        'GEN-WAL-IP15',
         'Case', 
-        true,                      // True = "We print the labels"
+        true,
         15.00, 
         3.00, 
         10, 
-        '{"brand": "Generic", "compatibility": "iPhone 15", "color": "Black"}' // JSON Properties
+        '{"brand": "Generic", "compatibility": "iPhone 15", "color": "Black"}'
     ]);
 
     // 2. Generic Wallet Case for Samsung S24
-    // Different barcode, different properties
     await pool.query(`
         INSERT INTO products 
-        (name, barcode, category, is_generic, price, cost, stock_quantity, properties)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        (tenant_id, name, barcode, category, is_generic, price, cost, stock_quantity, properties)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `, [
+        tenantId,
         'Wallet Case (Samsung S24)', 
         'GEN-WAL-S24', 
         'Case', 
@@ -178,16 +246,16 @@ const seedProductsTable = async () => {
     ]);
 
     // 3. A "True" Brand Name Product (Otterbox)
-    // This uses the real UPC on the box, so is_generic is FALSE
     await pool.query(`
         INSERT INTO products 
-        (name, barcode, category, is_generic, price, cost, stock_quantity, properties)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        (tenant_id, name, barcode, category, is_generic, price, cost, stock_quantity, properties)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `, [
+        tenantId,
         'Otterbox Defender (iPhone 15)', 
-        '840104290001', // Real UPC scanned from box
+        '840104290001',
         'Case', 
-        false,          // False = "Don't print labels, use the box"
+        false,
         59.99, 
         30.00, 
         5, 
@@ -206,8 +274,9 @@ const createSalesTables = async () => {
         DROP TABLE IF EXISTS sales CASCADE;
         CREATE TABLE sales (
             id SERIAL PRIMARY KEY,
+            tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
             user_id INTEGER REFERENCES users(id),
-            client_id INTEGER REFERENCES clients(id), -- Optional: Guest checkout
+            client_id INTEGER REFERENCES clients(id),
             total_amount DECIMAL(10, 2) NOT NULL,
             payment_method VARCHAR(50),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -229,6 +298,7 @@ const createSalesTables = async () => {
 };
 
 const seedSalesTables = async () => {
+    const tenantId = await getTenantId();
     const userRes = await pool.query(
         "SELECT id FROM users WHERE username = 'David' LIMIT 1"
     );
@@ -250,10 +320,10 @@ const seedSalesTables = async () => {
     }
 
     const saleRes = await pool.query(
-        `INSERT INTO sales (user_id, client_id, total_amount, payment_method)
-         VALUES ($1, $2, $3, $4)
+        `INSERT INTO sales (tenant_id, user_id, client_id, total_amount, payment_method)
+         VALUES ($1, $2, $3, $4, $5)
          RETURNING id`,
-        [userId, clientId, productPrice, 'Cash']
+        [tenantId, userId, clientId, productPrice, 'Cash']
     );
 
     const saleId = saleRes.rows[0]?.id;
@@ -279,6 +349,7 @@ const createPaymentHistoryTable = async () => {
     DROP TABLE IF EXISTS payment_history CASCADE;
     CREATE TABLE payment_history (
         id SERIAL PRIMARY KEY,
+        tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
         subscription_id INTEGER NOT NULL REFERENCES subscriptions(id) ON DELETE CASCADE,
         amount_paid DECIMAL(10, 2) NOT NULL,
         status VARCHAR(20) NOT NULL,
@@ -291,6 +362,7 @@ const createPaymentHistoryTable = async () => {
 };
 
 const seedPaymentHistoryTable = async () => {
+    const tenantId = await getTenantId();
     const subscriptionRes = await pool.query(
         "SELECT id FROM subscriptions ORDER BY id ASC LIMIT 1"
     );
@@ -302,9 +374,9 @@ const seedPaymentHistoryTable = async () => {
     }
 
     await pool.query(
-        `INSERT INTO payment_history (subscription_id, amount_paid, status)
-         VALUES ($1, $2, $3)`,
-        [subscriptionId, 50.00, 'Paid']
+        `INSERT INTO payment_history (tenant_id, subscription_id, amount_paid, status)
+         VALUES ($1, $2, $3, $4)`,
+        [tenantId, subscriptionId, 50.00, 'Paid']
     );
 
     console.log('🌱 Payment history seeded');
@@ -318,6 +390,7 @@ const createRepairTicketsTable = async () => {
     DROP TABLE IF EXISTS repair_tickets CASCADE;
     CREATE TABLE repair_tickets (
         id SERIAL PRIMARY KEY,
+        tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
         client_id INTEGER REFERENCES clients(id) NOT NULL,
         device_model VARCHAR(100),
         issue_description TEXT,
@@ -368,6 +441,7 @@ const createClientLtvView = async () => {
 };
 
 const seedRepairTicketsTable = async () => {
+    const tenantId = await getTenantId();
     const clientRes = await pool.query(
         "SELECT id FROM clients WHERE full_name = 'John Doe' LIMIT 1"
     );
@@ -380,9 +454,9 @@ const seedRepairTicketsTable = async () => {
 
     await pool.query(
         `INSERT INTO repair_tickets 
-        (client_id, device_model, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [clientId, 'iPhone 12', 'Screen cracked, touch unresponsive', 'In Progress', 149.00, 45.00, 30.00, 149.00]
+        (tenant_id, client_id, device_model, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [tenantId, clientId, 'iPhone 12', 'Screen cracked, touch unresponsive', 'In Progress', 149.00, 45.00, 30.00, 149.00]
     );
 
     console.log('🌱 Repair tickets seeded');
@@ -397,6 +471,7 @@ const reset = async () => {
         console.log("🚀 Starting Database Reset...");
 
         // Create Tables (Order Matters!)
+        await createTenantsTable();
         await createUsersTable();
         await createClientsTable();
         await createSubscriptionsTable(); // Depends on Clients
@@ -409,6 +484,7 @@ const reset = async () => {
         console.log("--------------------------------");
 
         // Seed Tables
+        await seedTenantsTable();
         await seedUsersTable();
         await seedClientsTable();
         await seedSubscriptionsTable();

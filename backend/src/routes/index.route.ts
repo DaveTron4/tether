@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import {verifyToken} from '../middleware/auth.middleware.js';
+import {isSuperAdmin, verifyToken} from '../middleware/auth.middleware.js';
 
 // Route imports
 import authRoutes from './auth.route.js';
@@ -9,8 +9,12 @@ import subscriptionRoutes from './subscription.route.js';
 import productRouter from './product.route.js';
 import repairRoutes from './repair.route.js';
 import saleRoutes from './sale.route.js';
+import tenantRoutes from './tenants.route.js';
 
 const router = Router();
+
+// Super Admin routes
+router.use('/tenants', isSuperAdmin as any, tenantRoutes);
 
 // Auth
 router.use('/auth', authRoutes);

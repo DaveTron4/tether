@@ -36,3 +36,11 @@ export const isAdmin = (req: AuthRequest, res: Response, next: NextFunction) => 
   }
   next();
 };
+
+// The Super Admin Check
+export const isSuperAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (req.headers['x-super-admin-secret'] !== process.env.SUPER_ADMIN_SECRET) {
+    return res.status(403).json({ error: 'Access denied. Super admins only.' });
+  }
+  next();
+}

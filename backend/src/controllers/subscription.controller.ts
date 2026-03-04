@@ -1,11 +1,13 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
+import type { AuthRequest } from '../models/authRequest.interface.js';
 import { pool } from '../config/database.js';
 
 // Controller functions for managing subscriptions
 
 // Get all client subscriptions
-const getClientSubscriptions = async (req: Request, res: Response) => {
+const getClientSubscriptions = async (req: AuthRequest, res: Response) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
         const { client_id } = req.query;
         
         if (!client_id) {
@@ -14,9 +16,9 @@ const getClientSubscriptions = async (req: Request, res: Response) => {
 
         const result = await pool.query(
             `SELECT * FROM subscriptions 
-             WHERE client_id = $1 
+             WHERE client_id = $1 AND tenant_id = $2
              ORDER BY is_active DESC, created_at DESC`, 
-            [client_id]
+            [client_id, req.user.tenant_id]
         );
 
         if (result.rows.length === 0) {
@@ -30,16 +32,17 @@ const getClientSubscriptions = async (req: Request, res: Response) => {
 };
 
 // Create a new Subscription
-const createSubscription = async (req: Request, res: Response) => {
+const createSubscription = async (req: AuthRequest, res: Response) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
         const { client_id, service_type, carrier, plan_amount, payment_due_day } = req.body;
 
         const result = await pool.query(
             `INSERT INTO subscriptions 
-             (client_id, service_type, carrier, plan_amount, payment_due_day, status)
-             VALUES ($1, $2, $3, $4, $5, 'Unpaid')
+             (tenant_id, client_id, service_type, carrier, plan_amount, payment_due_day, status)
+             VALUES ($1, $2, $3, $4, $5, $6, 'Unpaid')
              RETURNING *`,
-            [client_id, service_type, carrier, plan_amount, payment_due_day]
+            [req.user.tenant_id, client_id, service_type, carrier, plan_amount, payment_due_day]
         );
 
         res.status(201).json(result.rows[0]);
@@ -49,8 +52,9 @@ const createSubscription = async (req: Request, res: Response) => {
 };
 
 // Update an existing Subscription
-const updateSubscription = async (req: Request, res: Response) => {
+const updateSubscription = async (req: AuthRequest, res: Response) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
         const { id } = req.params;
         const { plan_amount, is_active, status } = req.body;
 
@@ -59,9 +63,9 @@ const updateSubscription = async (req: Request, res: Response) => {
              SET plan_amount = COALESCE($1, plan_amount),
                  is_active = COALESCE($2, is_active),
                  status = COALESCE($3, status)
-             WHERE id = $4 
+             WHERE id = $4 AND tenant_id = $5
              RETURNING *`,
-            [plan_amount, is_active, status, id]
+            [plan_amount, is_active, status, id, req.user.tenant_id]
         );
 
         if (result.rows.length === 0) {

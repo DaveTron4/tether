@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { pool } from '../config/database.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import type { AuthRequest } from '../models/authRequest.interface.js';
 
 // Controller functions for authentication
 
@@ -26,7 +27,7 @@ const login = async (req: Request, res: Response) => {
             return res.status(401).json({ error: 'Invalid username or password' });
         }  
 
-        const tokenPayload = { id: user.id, username: user.username, role: user.role };
+        const tokenPayload = { id: user.id, tenant_id: user.tenant_id, username: user.username, role: user.role };
         const JWT_SECRET = process.env.JWT_SECRET;
         if (!JWT_SECRET) return res.status(500).json({ error: 'Server misconfigured: JWT secret missing' });
         const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
@@ -35,7 +36,7 @@ const login = async (req: Request, res: Response) => {
         return res.json({ 
             message: 'Login successful', 
             token: token,
-            user: { id: user.id, username: user.username, fullName: user.full_name, role: user.role }
+            user: { id: user.id, username: user.username, fullName: user.full_name, role: user.role, tenantId: user.tenant_id }
         });
 
     } catch (err) {
@@ -45,7 +46,7 @@ const login = async (req: Request, res: Response) => {
 };
 
 // User registration
-const register = async (req: Request, res: Response) => {
+const register = async (req: AuthRequest, res: Response) => {
     try {
         const { username, password, fullName } = req.body || {};
 
@@ -61,10 +62,12 @@ const register = async (req: Request, res: Response) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const defaultRole = 'employee';
+
+        if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
         
         const result = await pool.query(
-            'INSERT INTO users (username, password_hash, full_name, role) VALUES ($1, $2, $3, $4) RETURNING id, username, full_name, role',
-            [username, hashedPassword, fullName, defaultRole]
+            'INSERT INTO users (tenant_id, username, password_hash, full_name, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, username, full_name, role, tenant_id',
+            [req.user.tenant_id, username, hashedPassword, fullName, defaultRole]
         );
         
         res.status(201).json(result.rows[0]);
