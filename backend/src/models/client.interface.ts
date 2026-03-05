@@ -1,14 +1,16 @@
 // client.model.ts
 export interface Client {
-  id?: number; 
+  id?: number;
+  tenant_id?: string;
+
   full_name: string;
-  email?: string;
   phone_number?: string;
+  email?: string;
   zip_code?: string;
   notes?: string;
-  
+
   status?: 'Active' | 'Inactive' | 'Debt';
 
   last_visit?: string;
-  created_at?: string; 
+  created_at?: string;
 }

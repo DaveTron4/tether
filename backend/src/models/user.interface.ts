@@ -1,10 +1,11 @@
 
 export interface User {
     id?: number;
+    tenant_id: string;
     username: string;
     email?: string;
     password_hash: string;
-    role: 'admin' | 'employee';
+    role: 'superadmin' | 'admin' | 'employee';
     full_name?: string;
     created_at?: Date | string;
 }

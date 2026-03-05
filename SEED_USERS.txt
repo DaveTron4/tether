@@ -1,0 +1,11 @@
+Seeded Users (from db:reset)
+=============================
+All users share the same password: ADMIN_PASSWORD env variable
+
+Username            Role            Tenant
+-----------         -----------     -----------
+David               superadmin      system
+tetherAdmin         admin           tether
+tetherEmployee      employee        tether
+qfAdmin             admin           quickfix
+qfEmployee          employee        quickfix

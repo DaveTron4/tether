@@ -1,11 +1,42 @@
 <div class="card">
-    <h2 class="text-2xl font-bold mb-4">Register</h2>
+    <h2 class="text-2xl font-bold mb-4">
+        {{ isSuperAdmin() ? 'Create User for Tenant' : 'Register Employee' }}
+    </h2>
+
+    @if (successMessage()) {
+        <div class="alert-success mb-4">{{ successMessage() }}</div>
+    }
+    @if (errorMessage()) {
+        <div class="alert-error mb-4">{{ errorMessage() }}</div>
+    }
    
     <form class="register-form" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
         <div class="card-content flex flex-col gap-4">
+
+            <!-- Superadmin-only: Tenant selector -->
+            @if (isSuperAdmin()) {
+                <div class="input-group flex flex-col">
+                    <label for="tenant_id">Tenant (Store):</label>
+                    <select id="tenant_id" formControlName="tenant_id">
+                        <option value="" disabled>Select a tenant</option>
+                        @for (tenant of tenants(); track tenant.id) {
+                            <option [value]="tenant.id">{{ tenant.store_name }} ({{ tenant.subdomain }})</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="input-group flex flex-col">
+                    <label for="role">Role:</label>
+                    <select id="role" formControlName="role">
+                        <option value="admin">Admin</option>
+                        <option value="employee">Employee</option>
+                    </select>
+                </div>
+            }
+
             <div class="input-group flex flex-col">
-                <label for="email">Email:</label>
-                <input id="email" placeholder="Enter your email" type="email" formControlName="email" />
+                <label for="fullName">Full Name:</label>
+                <input id="fullName" placeholder="Enter full name" type="text" formControlName="fullName" />
             </div>
 
             <div class="input-group flex flex-col">
@@ -18,11 +49,7 @@
                 <input id="password" placeholder="Create a password" type="password" formControlName="password" />
             </div>
 
-            <button class = "btn-primary" type="submit">Register</button>
-        </div>
-
-        <div class="card-footer mt-4 text-center">
-            <p>Already have an account? <a class="text-primary hover:underline hover:cursor-pointer" routerLink="/login">Login here</a></p>
+            <button class="btn-primary" type="submit">Create User</button>
         </div>
     </form>
 </div>

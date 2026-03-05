@@ -61,15 +61,29 @@ const createTenantsTable = async () => {
 };
 
 const seedTenantsTable = async () => {
+    // System tenant for superadmin
+    await pool.query(`
+        INSERT INTO tenants (store_name, subdomain, contact_email)
+        VALUES ('System', 'system', 'superadmin@tether.com')
+    `);
+
+    // Tenant 1: Tether Tech Repair
     await pool.query(`
         INSERT INTO tenants (store_name, subdomain, contact_email, contact_phone, address_line1, address_city, address_state, address_zip)
         VALUES ('Tether Tech Repair', 'tether', 'info@tether.com', '404-123-4567', '123 Main St', 'Atlanta', 'GA', '30018')
     `);
-    console.log("🌱 Tenants seeded");
+
+    // Tenant 2: QuickFix Mobile
+    await pool.query(`
+        INSERT INTO tenants (store_name, subdomain, contact_email, contact_phone, address_line1, address_city, address_state, address_zip)
+        VALUES ('QuickFix Mobile', 'quickfix', 'hello@quickfix.com', '770-555-1234', '456 Peachtree Rd', 'Decatur', 'GA', '30030')
+    `);
+
+    console.log("🌱 Tenants seeded (system + tether + quickfix)");
 };
 
-const getTenantId = async () => {
-    const res = await pool.query("SELECT id FROM tenants WHERE subdomain = 'tether' LIMIT 1");
+const getTenantId = async (subdomain: string = 'tether') => {
+    const res = await pool.query("SELECT id FROM tenants WHERE subdomain = $1 LIMIT 1", [subdomain]);
     return res.rows[0]?.id;
 };
 
@@ -82,25 +96,56 @@ const createUsersTable = async () => {
     CREATE TABLE users (
         id SERIAL PRIMARY KEY,
         tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-        username VARCHAR(50) UNIQUE NOT NULL,
-        email VARCHAR(100) UNIQUE,
+        username VARCHAR(50) NOT NULL,
+        email VARCHAR(100),
         password_hash VARCHAR(255) NOT NULL,
         role VARCHAR(20) DEFAULT 'employee',
         full_name VARCHAR(100),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(tenant_id, username),
+        UNIQUE(tenant_id, email)
     );`;
     await pool.query(query);
     console.log("🏗️ Users table created");
 };
 
 const seedUsersTable = async () => {
-    const tenantId = await getTenantId();
+    const systemTenantId = await getTenantId('system');
+    const tetherTenantId = await getTenantId('tether');
+    const quickfixTenantId = await getTenantId('quickfix');
     const password = await bcrypt.hash(process.env.ADMIN_PASSWORD as string, 10);
+
+    // Superadmin (lives under system tenant)
     await pool.query(`
         INSERT INTO users (tenant_id, username, password_hash, full_name, email, role)
         VALUES ($1, $2, $3, $4, $5, $6)
-    `, [tenantId, 'David', password, 'David Admin', 'david@tether.com', 'superadmin']);
-    console.log("🌱 Users seeded (Super Admin created)");
+    `, [systemTenantId, 'David', password, 'David Super', 'david@tether.com', 'superadmin']);
+
+    // Tether: Admin
+    await pool.query(`
+        INSERT INTO users (tenant_id, username, password_hash, full_name, email, role)
+        VALUES ($1, $2, $3, $4, $5, $6)
+    `, [tetherTenantId, 'tetherAdmin', password, 'Tether Admin', 'admin@tether.com', 'admin']);
+
+    // Tether: Employee
+    await pool.query(`
+        INSERT INTO users (tenant_id, username, password_hash, full_name, email, role)
+        VALUES ($1, $2, $3, $4, $5, $6)
+    `, [tetherTenantId, 'tetherEmployee', password, 'Tether Employee', 'employee@tether.com', 'employee']);
+
+    // QuickFix: Admin
+    await pool.query(`
+        INSERT INTO users (tenant_id, username, password_hash, full_name, email, role)
+        VALUES ($1, $2, $3, $4, $5, $6)
+    `, [quickfixTenantId, 'qfAdmin', password, 'QuickFix Admin', 'admin@quickfix.com', 'admin']);
+
+    // QuickFix: Employee
+    await pool.query(`
+        INSERT INTO users (tenant_id, username, password_hash, full_name, email, role)
+        VALUES ($1, $2, $3, $4, $5, $6)
+    `, [quickfixTenantId, 'qfEmployee', password, 'QuickFix Employee', 'employee@quickfix.com', 'employee']);
+
+    console.log("🌱 Users seeded (1 superadmin + 2 admins + 2 employees)");
 };
 
 // ==========================================
@@ -412,6 +457,7 @@ const createClientLtvView = async () => {
     CREATE VIEW client_lifetime_value AS
     SELECT
         c.id AS client_id,
+        c.tenant_id,
         COALESCE(sales_totals.sales_total, 0)
             + COALESCE(repair_totals.repair_total, 0)
             + COALESCE(payment_totals.subscription_total, 0) AS lifetime_value,
@@ -420,21 +466,21 @@ const createClientLtvView = async () => {
         COALESCE(payment_totals.subscription_total, 0) AS subscription_total
     FROM clients c
     LEFT JOIN (
-        SELECT client_id, SUM(total_amount) AS sales_total
+        SELECT client_id, tenant_id, SUM(total_amount) AS sales_total
         FROM sales
-        GROUP BY client_id
-    ) sales_totals ON sales_totals.client_id = c.id
+        GROUP BY client_id, tenant_id
+    ) sales_totals ON sales_totals.client_id = c.id AND sales_totals.tenant_id = c.tenant_id
     LEFT JOIN (
-        SELECT client_id, SUM(charge_amount) AS repair_total
+        SELECT client_id, tenant_id, SUM(charge_amount) AS repair_total
         FROM repair_tickets
-        GROUP BY client_id
-    ) repair_totals ON repair_totals.client_id = c.id
+        GROUP BY client_id, tenant_id
+    ) repair_totals ON repair_totals.client_id = c.id AND repair_totals.tenant_id = c.tenant_id
     LEFT JOIN (
-        SELECT s.client_id, SUM(ph.amount_paid) AS subscription_total
+        SELECT s.client_id, s.tenant_id, SUM(ph.amount_paid) AS subscription_total
         FROM payment_history ph
-        JOIN subscriptions s ON s.id = ph.subscription_id
-        GROUP BY s.client_id
-    ) payment_totals ON payment_totals.client_id = c.id;
+        JOIN subscriptions s ON s.id = ph.subscription_id AND ph.tenant_id = s.tenant_id
+        GROUP BY s.client_id, s.tenant_id
+    ) payment_totals ON payment_totals.client_id = c.id AND payment_totals.tenant_id = c.tenant_id;
     `;
     await pool.query(query);
     console.log('🏗️ Client lifetime value view created');

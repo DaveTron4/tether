@@ -1,0 +1,60 @@
+<div class="employee-form-modal-overlay">
+    <div class="employee-form-modal">
+        <h2 class="text-2xl font-semibold mb-4">Add New Employee</h2>
+        <lucide-icon name="x" class="w-5 h-5 absolute top-4 right-4 cursor-pointer hover:bg-gray-200 rounded-full p-1" (click)="close.emit()"></lucide-icon>
+        
+        @if (errorMessage()) {
+            <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                {{ errorMessage() }}
+            </div>
+        }
+
+        <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()" class="space-y-5">
+            <div class="flex flex-col gap-6">
+                <fieldset class="border border-gray-200 rounded-lg px-4 pt-3 pb-4 w-full">
+                    <legend class="px-2 text-sm font-semibold text-gray-600 whitespace-nowrap">Account Information</legend>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Full Name</label>
+                            <input formControlName="fullName" type="text" placeholder="Full Name" class="w-full" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Username</label>
+                            <input formControlName="username" type="text" placeholder="Username" class="w-full" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Password</label>
+                            <input formControlName="password" type="password" placeholder="Min. 6 characters" class="w-full" />
+                        </div>
+                    </div>
+                </fieldset>
+
+                @if (isSuperAdmin) {
+                    <fieldset class="border border-gray-200 rounded-lg px-4 pt-3 pb-4 w-full">
+                        <legend class="px-2 text-sm font-semibold text-gray-600 whitespace-nowrap">Tenant &amp; Role</legend>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Tenant</label>
+                                <select formControlName="tenant_id" class="w-full">
+                                    <option value="">Select a tenant...</option>
+                                    @for (tenant of tenants(); track tenant.id) {
+                                        <option [value]="tenant.id">{{ tenant.store_name }} ({{ tenant.subdomain }})</option>
+                                    }
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Role</label>
+                                <select formControlName="role" class="w-full">
+                                    <option value="employee">Employee</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                    </fieldset>
+                }
+            </div>
+
+            <button type="submit" class="mt-4 px-4 py-2 bg-primary text-white rounded w-full">Create Employee</button>
+        </form>
+    </div>
+</div>

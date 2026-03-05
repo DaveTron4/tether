@@ -2,9 +2,10 @@ export interface AuthResponse {
   token: string;
   user: {
     id: number;
-    email: string;
+    tenantId: string;
+    username: string;
     fullName: string;
-    password_hash: string;
-    role: 'admin' | 'employee';
+    email?: string;
+    role: 'superadmin' | 'admin' | 'employee';
   };
 }

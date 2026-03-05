@@ -108,7 +108,7 @@ const getClientSummary = async (req: AuthRequest, res: Response) => {
         COUNT(DISTINCT CASE WHEN s.is_active = TRUE THEN s.id END)::integer as active_subscriptions,
         COUNT(DISTINCT rt.id)::integer as total_repairs
       FROM clients c
-      LEFT JOIN client_lifetime_value clv ON c.id = clv.client_id AND clv.tenant_id = $2
+      LEFT JOIN client_lifetime_value clv ON c.id = clv.client_id AND clv.tenant_id = c.tenant_id
       LEFT JOIN subscriptions s ON c.id = s.client_id AND s.tenant_id = $2
       LEFT JOIN repair_tickets rt ON c.id = rt.client_id AND rt.tenant_id = $2
       WHERE c.id = $1 AND c.tenant_id = $2

@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
+import { AuthService } from '../../../core/services/auth';
 
-import  { LucideAngularModule, Home, Users, Box, Wrench, LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
+import  { LucideAngularModule, Home, Users, Box, Wrench, UserPlus, LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
 @Component({
   selector: 'app-sidebar',
   imports: [ RouterLink, 
@@ -16,11 +17,18 @@ import  { LucideAngularModule, Home, Users, Box, Wrench, LUCIDE_ICONS, LucideIco
     {
       provide: LUCIDE_ICONS,
       multi: true,
-      useValue: new LucideIconProvider({ Home, Users, Box, Wrench })
+      useValue: new LucideIconProvider({ Home, Users, Box, Wrench, UserPlus })
     }
   ]
 })
 export class Sidebar {
+  private authService = inject(AuthService);
+
+  isAdminOrAbove = computed(() => {
+    const user = this.authService.currentUser();
+    return user?.role === 'admin' || user?.role === 'superadmin';
+  });
+
   expanded = false;
   private hoverTimer: any = null;
 

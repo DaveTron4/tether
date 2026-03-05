@@ -100,12 +100,14 @@ CREATE TABLE IF NOT EXISTS users (
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
 
     -- AUTH & ROLES
-    username VARCHAR(50) UNIQUE NOT NULL,
+    username VARCHAR(50) NOT NULL,
     full_name VARCHAR(100),
-    email VARCHAR(100) UNIQUE,
+    email VARCHAR(100),
     password_hash VARCHAR(255) NOT NULL, -- Store HASHED password, not plain text
     role VARCHAR(20) DEFAULT 'employee', -- 'admin' or 'employee' or 'superadmin'
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(tenant_id, username),
+    UNIQUE(tenant_id, email)
 );
 
 -- =========Products Table=========

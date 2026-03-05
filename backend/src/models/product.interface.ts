@@ -1,18 +1,20 @@
 export interface Product {
-  id?: number; 
+  id?: number;
+  tenant_id?: string;
+
   name: string;
   barcode: string;
-  
+
   category: 'Phone' | 'Case' | 'Charger' | 'Service' | string;
   is_generic: boolean;
-  
-  price: number; 
-  cost: number;  
-  
+
+  price: number;
+  cost?: number;
+
   stock_quantity: number;
   min_stock_level: number;
-  
-  properties?: Record<string, any>; 
-  
+
+  properties?: Record<string, any>;
+
   created_at?: string;
 }

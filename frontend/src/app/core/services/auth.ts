@@ -65,14 +65,8 @@ export class AuthService {
   // ==========================================================
   // Register Method
   // ==========================================================
-  register(data: { email: string; username: string; password: string }) {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data).pipe(
-      tap((response) => {
-        localStorage.setItem('tether_token', response.token);
-        localStorage.setItem('tether_user', JSON.stringify(response.user));
-        this.currentUser.set(response.user);
-      })
-    );
+  register(data: { username: string; password: string; fullName?: string; tenant_id?: string; role?: string }) {
+    return this.http.post<{ id: number; username: string; full_name: string; role: string; tenant_id: string }>(`${this.apiUrl}/register`, data);
   }
   // ==========================================================
 

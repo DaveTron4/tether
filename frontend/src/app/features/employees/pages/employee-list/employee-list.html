@@ -1,0 +1,39 @@
+<div class="p-8 w-full max-w-7xl mx-auto h-full flex flex-col">
+  
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Employees</h1>
+      <p class="text-sm text-gray-500 mt-1">Manage your team members</p>
+    </div>
+    <button class="btn-primary flex items-center gap-2" (click)="openCreateModal()">
+      <lucide-icon name="plus" class="w-4 h-4"></lucide-icon>
+      Add Employee
+    </button>
+  </div>
+
+  <div class="mb-6 relative shrink-0">
+    <lucide-icon name="search" class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5"></lucide-icon>
+    <input 
+      type="text" 
+      placeholder="Search by name, username, email, or role..." 
+      class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+      (input)="updateSearch($event)"
+    >
+  </div>
+
+  <div class="flex-1 min-h-0">
+    <app-employee-table 
+      [employees]="filteredEmployees()"
+      [showTenant]="isSuperAdmin()">
+    </app-employee-table>
+  </div>
+
+  @if (showCreateModal()) {
+    <app-employee-form-modal 
+      [isSuperAdmin]="isSuperAdmin()" 
+      (close)="closeCreateModal()" 
+      (created)="onEmployeeCreated()">
+    </app-employee-form-modal>
+  }
+
+</div>

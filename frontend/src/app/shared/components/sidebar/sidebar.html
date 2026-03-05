@@ -34,6 +34,16 @@
             </a>
         </li>
 
+        <!-- Admin-only items -->
+        @if (isAdminOrAbove()) {
+            <li class="sidebar-item">
+                <a routerLink="/employees" class="sidebar-btn" title="Employees">
+                    <lucide-icon name="user-plus" class="sidebar-icon" aria-hidden="true"></lucide-icon>
+                    <span class="sidebar-label" [class.visible]="expanded">Employees</span>
+                </a>
+            </li>
+        }
+
         <!-- add more items -->
     </ul>
 </nav>

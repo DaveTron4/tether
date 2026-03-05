@@ -1,0 +1,11 @@
+.employee-form-modal {
+	max-height: calc(100vh - 4rem);
+	overflow: hidden;
+}
+
+.employee-form-modal > form,
+.employee-form-modal form {
+	max-height: calc(100vh - 8rem);
+	overflow-y: auto;
+	padding-right: 0.25rem;
+}

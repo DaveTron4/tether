@@ -1,0 +1,70 @@
+<div class="h-full max-h-full overflow-x-auto overflow-y-auto bg-white rounded-lg shadow border border-gray-200">
+    <table class="w-full text-left text-sm text-text-main">
+    
+        <thead class="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold">
+            <tr>
+                <th class="px-6 py-4">Name</th>
+                <th class="px-6 py-4">Username</th>
+                <th class="px-6 py-4">Email</th>
+                <th class="px-6 py-4">Role</th>
+                @if (showTenant) {
+                    <th class="px-6 py-4">Tenant</th>
+                }
+                <th class="px-6 py-4">Joined</th>
+            </tr>
+        </thead>
+
+        <tbody class="divide-y divide-gray-100">
+            @for (employee of employees; track employee.id) {
+                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                    
+                    <td class="px-6 py-4 font-medium text-gray-900">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-primary-light text-primary flex items-center justify-center font-bold text-xs">
+                                {{ (employee.full_name || employee.username).slice(0,2).toUpperCase() }}
+                            </div>
+                            <span>{{ employee.full_name || employee.username }}</span>
+                        </div>
+                    </td>
+
+                    <td class="px-6 py-4 text-gray-500">
+                        {{ employee.username }}
+                    </td>
+
+                    <td class="px-6 py-4 text-gray-500">
+                        {{ employee.email || '—' }}
+                    </td>
+
+                    <td class="px-6 py-4">
+                        <span 
+                            class="px-2 py-1 rounded-full text-xs font-medium border"
+                            [ngClass]="{
+                                'bg-purple-50 text-purple-700 border-purple-200': employee.role === 'superadmin',
+                                'bg-blue-50 text-blue-700 border-blue-200': employee.role === 'admin',
+                                'bg-gray-100 text-gray-600 border-gray-200': employee.role === 'employee'
+                            }"
+                        >
+                            {{ employee.role }}
+                        </span>
+                    </td>
+
+                    @if (showTenant) {
+                        <td class="px-6 py-4 text-gray-500">
+                            {{ employee.tenant_name || employee.tenant_id }}
+                        </td>
+                    }
+
+                    <td class="px-6 py-4 text-gray-500">
+                        {{ employee.created_at ? (employee.created_at | date:'MMM d, y') : '—' }}
+                    </td>
+                </tr>
+            } @empty {
+                <tr>
+                    <td [attr.colspan]="showTenant ? 6 : 5" class="px-6 py-8 text-center text-gray-500">
+                        No employees found.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

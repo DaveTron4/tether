@@ -31,7 +31,7 @@ export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction)
 // The Admin Check
 export const isAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
 
-  if (!req.user || req.user.role !== 'admin') {
+  if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'superadmin')) {
     return res.status(403).json({ error: 'Access denied. Admins only.' });
   }
   next();

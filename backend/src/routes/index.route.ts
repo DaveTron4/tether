@@ -10,6 +10,7 @@ import productRouter from './product.route.js';
 import repairRoutes from './repair.route.js';
 import saleRoutes from './sale.route.js';
 import tenantRoutes from './tenants.route.js';
+import userRoutes from './user.route.js';
 
 const router = Router();
 
@@ -37,6 +38,9 @@ router.use('/repairs', verifyToken as any, repairRoutes);
 
 // Sale routes
 router.use('/sales', verifyToken as any, saleRoutes);
+
+// User routes (admin-only)
+router.use('/users', verifyToken as any, userRoutes);
 
 // Health check route
 router.get('/health', (req, res) => {

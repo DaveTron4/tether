@@ -1,6 +1,6 @@
 import {
   PlatformLocation
-} from "./chunk-NAQ7PDNA.js";
+} from "./chunk-YAE4QYZL.js";
 import {
   ApplicationRef,
   Attribute,
@@ -60,16 +60,16 @@ import {
   ɵɵinject,
   ɵɵinjectAttribute,
   ɵɵstyleProp
-} from "./chunk-IYSQIG7V.js";
+} from "./chunk-KP2ZB4NX.js";
 import {
   Subject
-} from "./chunk-LX2Q34Y6.js";
+} from "./chunk-DMY7NSOM.js";
 import {
   __spreadProps,
   __spreadValues
 } from "./chunk-GOMI4DH3.js";
 
-// ../../../../../node_modules/@angular/common/fesm2022/_location-chunk.mjs
+// node_modules/@angular/common/fesm2022/_location-chunk.mjs
 function joinWithSlash(start, end) {
   if (!start) return end;
   if (!end) return start;
@@ -313,7 +313,7 @@ function _stripOrigin(baseHref) {
   return baseHref;
 }
 
-// ../../../../../node_modules/@angular/common/fesm2022/_common_module-chunk.mjs
+// node_modules/@angular/common/fesm2022/_common_module-chunk.mjs
 var HashLocationStrategy = class _HashLocationStrategy extends LocationStrategy {
   _platformLocation;
   _baseHref = "";
@@ -3125,7 +3125,7 @@ var CommonModule = class _CommonModule {
   }], null, null);
 })();
 
-// ../../../../../node_modules/@angular/common/fesm2022/_platform_navigation-chunk.mjs
+// node_modules/@angular/common/fesm2022/_platform_navigation-chunk.mjs
 var PRECOMMIT_HANDLER_SUPPORTED = new InjectionToken("", {
   factory: () => {
     return typeof window !== "undefined" && typeof window.NavigationPrecommitController !== "undefined";
@@ -3151,7 +3151,7 @@ var PlatformNavigation = class _PlatformNavigation {
   }], null, null);
 })();
 
-// ../../../../../node_modules/@angular/common/fesm2022/common.mjs
+// node_modules/@angular/common/fesm2022/common.mjs
 var NavigationAdapterForLocation = class _NavigationAdapterForLocation extends Location {
   navigation = inject(PlatformNavigation);
   destroyRef = inject(DestroyRef);
@@ -4526,4 +4526,4 @@ export {
   PRECONNECT_CHECK_BLOCKLIST,
   NgOptimizedImage
 };
-//# sourceMappingURL=chunk-GJIDXTC3.js.map
+//# sourceMappingURL=chunk-JDQXPHQF.js.map

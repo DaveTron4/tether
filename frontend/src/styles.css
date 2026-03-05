@@ -252,12 +252,14 @@
     }
 
     /* Modal overlay - covers the entire screen with a semi-transparent backdrop */
-    .client-form-modal-overlay {
+    .client-form-modal-overlay,
+    .employee-form-modal-overlay {
         @apply fixed inset-0 z-50 flex items-center justify-center bg-black/50;
     }
 
     /* Modal content box */
-    .client-form-modal {
+    .client-form-modal,
+    .employee-form-modal {
         @apply relative p-6 bg-white rounded-lg shadow-lg w-full max-w-4xl mx-4;
     }
 
