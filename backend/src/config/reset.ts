@@ -44,8 +44,8 @@ const createTenantsTable = async () => {
         -- 4. BILLING & SUBSCRIPTION
         stripe_customer_id VARCHAR(255) UNIQUE,
         stripe_subscription_id VARCHAR(255) UNIQUE,
-        subscription_status VARCHAR(50) DEFAULT 'trialing', -- 'active', 'past_due', 'canceled'
-        subscription_tier VARCHAR(50) DEFAULT 'pro_cloud',  -- 'local_basic', 'pro_cloud'
+        subscription_status VARCHAR(50) DEFAULT 'inactive', -- 'active', 'past_due', 'canceled', 'inactive'
+        subscription_tier VARCHAR(50) DEFAULT 'starter',    -- 'starter', 'pro', 'enterprise'
         
         -- 5. STORE CONFIGURATION
         tax_rate DECIMAL(5,4) DEFAULT 0.0800, -- e.g., 8% local sales tax
@@ -63,20 +63,20 @@ const createTenantsTable = async () => {
 const seedTenantsTable = async () => {
     // System tenant for superadmin
     await pool.query(`
-        INSERT INTO tenants (store_name, subdomain, contact_email)
-        VALUES ('System', 'system', 'superadmin@tether.com')
+        INSERT INTO tenants (store_name, subdomain, contact_email, subscription_status)
+        VALUES ('System', 'system', 'superadmin@tether.com', 'active')
     `);
 
     // Tenant 1: Tether Tech Repair
     await pool.query(`
-        INSERT INTO tenants (store_name, subdomain, contact_email, contact_phone, address_line1, address_city, address_state, address_zip)
-        VALUES ('Tether Tech Repair', 'tether', 'info@tether.com', '404-123-4567', '123 Main St', 'Atlanta', 'GA', '30018')
+        INSERT INTO tenants (store_name, subdomain, contact_email, contact_phone, address_line1, address_city, address_state, address_zip, subscription_status, subscription_tier)
+        VALUES ('Tether Tech Repair', 'tether', 'info@tether.com', '404-123-4567', '123 Main St', 'Atlanta', 'GA', '30018', 'active', 'pro')
     `);
 
     // Tenant 2: QuickFix Mobile
     await pool.query(`
-        INSERT INTO tenants (store_name, subdomain, contact_email, contact_phone, address_line1, address_city, address_state, address_zip)
-        VALUES ('QuickFix Mobile', 'quickfix', 'hello@quickfix.com', '770-555-1234', '456 Peachtree Rd', 'Decatur', 'GA', '30030')
+        INSERT INTO tenants (store_name, subdomain, contact_email, contact_phone, address_line1, address_city, address_state, address_zip, subscription_status, subscription_tier)
+        VALUES ('QuickFix Mobile', 'quickfix', 'hello@quickfix.com', '770-555-1234', '456 Peachtree Rd', 'Decatur', 'GA', '30030', 'active', 'starter')
     `);
 
     console.log("🌱 Tenants seeded (system + tether + quickfix)");

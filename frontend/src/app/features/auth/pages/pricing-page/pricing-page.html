@@ -1,0 +1,64 @@
+<div class="pricing-container">
+    <!-- Header -->
+    <div class="text-center mb-10">
+        <h1 class="text-4xl font-bold text-text-main mb-3">Choose Your Plan</h1>
+        <p class="text-text-muted text-lg">Everything your repair shop needs to run smoothly.</p>
+
+        <!-- Billing Toggle -->
+        <div class="flex items-center justify-center gap-3 mt-6">
+            <span class="font-medium" [class.text-text-muted]="yearlyToggle" [class.text-text-main]="!yearlyToggle">Monthly</span>
+            <button 
+                class="toggle-switch" 
+                [class.active]="yearlyToggle"
+                (click)="toggleBilling()"
+                type="button">
+                <span class="toggle-knob" [class.active]="yearlyToggle"></span>
+            </button>
+            <span class="font-medium" [class.text-text-muted]="!yearlyToggle" [class.text-text-main]="yearlyToggle">
+                Yearly <span class="text-green-600 text-sm font-semibold">(Save ~17%)</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Plan Cards -->
+    <div class="plans-grid">
+        @for (plan of plans; track plan.name) {
+            <div class="plan-card" [class.highlighted]="plan.highlighted">
+                @if (plan.highlighted) {
+                    <div class="popular-badge">Most Popular</div>
+                }
+                
+                <h2 class="text-2xl font-bold mb-2">{{ plan.name }}</h2>
+                
+                <div class="price-display">
+                    <span class="text-4xl font-bold">${{ getPrice(plan) }}</span>
+                    <span class="text-text-muted">{{ getBillingLabel() }}</span>
+                </div>
+
+                <ul class="features-list">
+                    @for (feature of plan.features; track feature) {
+                        <li>
+                            <svg class="check-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                            {{ feature }}
+                        </li>
+                    }
+                </ul>
+
+                <a 
+                    class="select-plan-btn" 
+                    [class.highlighted]="plan.highlighted"
+                    [routerLink]="'/signup'"
+                    [queryParams]="{ plan: plan.name.toLowerCase(), price_id: getPriceId(plan), billing: yearlyToggle ? 'yearly' : 'monthly' }">
+                    Get Started
+                </a>
+            </div>
+        }
+    </div>
+
+    <!-- Back to Login -->
+    <div class="text-center mt-8">
+        <p class="text-text-muted">Already have an account? <a routerLink="/login" class="text-primary hover:underline">Log in</a></p>
+    </div>
+</div>

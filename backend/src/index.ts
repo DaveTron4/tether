@@ -2,11 +2,15 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import routes from './routes/index.route.js';
+import { handleWebhook } from './controllers/stripe.controller.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Stripe webhook — must be defined BEFORE body parsers so req.body stays a raw Buffer
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), handleWebhook as any);
 
 // Middleware
 app.use(cors());

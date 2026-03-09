@@ -2,6 +2,10 @@ import { Routes } from '@angular/router';
 
 // Import Pages
 import { LoginPage } from './features/auth/pages/login-page/login-page';
+import { PricingPage } from './features/auth/pages/pricing-page/pricing-page';
+import { SignupPage } from './features/auth/pages/signup-page/signup-page';
+import { SignupSuccess } from './features/auth/pages/signup-success/signup-success';
+import { SignupCancel } from './features/auth/pages/signup-cancel/signup-cancel';
 import { InventoryDashboard } from './features/inventory/pages/inventory-dashboard/inventory-dashboard';
 import { ClientDetail } from './features/crm/pages/client-detail/client-detail';
 import { ClientList } from './features/crm/pages/client-list/client-list';
@@ -27,6 +31,10 @@ export const routes: Routes = [
         canActivate: [loginGuard],
         children: [
             { path: 'login', component: LoginPage },
+            { path: 'pricing', component: PricingPage },
+            { path: 'signup', component: SignupPage },
+            { path: 'signup/success', component: SignupSuccess },
+            { path: 'signup/cancel', component: SignupCancel },
             { path: '', redirectTo: 'login', pathMatch: 'full' }
         ]
     },

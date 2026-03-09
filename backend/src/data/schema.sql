@@ -24,8 +24,8 @@ CREATE TABLE IF NOT EXISTS tenants (
     -- 4. BILLING & SUBSCRIPTION
     stripe_customer_id VARCHAR(255) UNIQUE,
     stripe_subscription_id VARCHAR(255) UNIQUE,
-    subscription_status VARCHAR(50) DEFAULT 'trialing', -- 'active', 'past_due', 'canceled'
-    subscription_tier VARCHAR(50) DEFAULT 'pro_cloud',  -- 'local_basic', 'pro_cloud'
+    subscription_status VARCHAR(50) DEFAULT 'inactive', -- 'active', 'past_due', 'canceled', 'inactive'
+    subscription_tier VARCHAR(50) DEFAULT 'starter',    -- 'starter', 'pro', 'enterprise'
     
     -- 5. STORE CONFIGURATION
     tax_rate DECIMAL(5,4) DEFAULT 0.0800, -- e.g., 8% local sales tax
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- =========Products Table=========
-CREATE TABLE products (
+CREATE TABLE IF NOT EXISTS products (
     -- Inventory items sold in the store (phones, accessories, repair parts)
     id SERIAL PRIMARY KEY,
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
@@ -141,7 +141,7 @@ CREATE TABLE products (
 
 
 -- =========Sales Table=========
-CREATE TABLE sales (
+CREATE TABLE IF NOT EXISTS sales (
     -- Each sale transaction in the store (phone sale, accessory sale, repair charge)
     id SERIAL PRIMARY KEY,
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
@@ -158,7 +158,7 @@ CREATE TABLE sales (
 );
 
 -- =========Sale Items Table==========
-CREATE TABLE sale_items (
+CREATE TABLE IF NOT EXISTS sale_items (
     -- Line items for each sale, linking products to sales with quantity and price at time of sale
     id SERIAL PRIMARY KEY,
 
@@ -172,7 +172,7 @@ CREATE TABLE sale_items (
 );
 
 -- =========Repair Tickets Table=========
-CREATE TABLE repair_tickets (
+CREATE TABLE IF NOT EXISTS repair_tickets (
     -- Each repair job for a client's device, with details and costs
     id SERIAL PRIMARY KEY,
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
@@ -193,6 +193,7 @@ CREATE TABLE repair_tickets (
     completed_at TIMESTAMP
 );
 
+DROP VIEW IF EXISTS client_lifetime_value;
 CREATE OR REPLACE VIEW client_lifetime_value AS
 SELECT
     c.id AS client_id,

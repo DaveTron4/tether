@@ -1,0 +1,77 @@
+<div class="signup-container">
+    <div class="card signup-card">
+        <!-- Header -->
+        <div class="mb-6">
+            <a routerLink="/pricing" class="text-sm text-text-muted hover:text-primary">&larr; Back to plans</a>
+            <h2 class="text-2xl font-bold mt-2">Create Your Store</h2>
+            <p class="text-text-muted">
+                @if (planName()) {
+                    Setting up your <span class="font-semibold text-primary capitalize">{{ planName() }}</span> plan ({{ billing() }})
+                } @else {
+                    Fill in your details to get started
+                }
+            </p>
+        </div>
+
+        @if (errorMessage()) {
+            <div class="alert-error mb-4">{{ errorMessage() }}</div>
+        }
+
+        <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+            <div class="flex flex-col gap-4">
+                <!-- Store Info Section -->
+                <h3 class="text-lg font-semibold text-text-main border-b border-gray-200 pb-2">Store Information</h3>
+
+                <div class="input-group flex flex-col">
+                    <label for="store_name">Store Name</label>
+                    <input id="store_name" type="text" formControlName="store_name" placeholder="My Repair Shop" />
+                </div>
+
+                <div class="input-group flex flex-col">
+                    <label for="subdomain">Subdomain</label>
+                    <div class="flex items-center gap-0">
+                        <input id="subdomain" type="text" formControlName="subdomain" placeholder="my-repair-shop" class="rounded-r-none" />
+                        <span class="subdomain-suffix">.tether.app</span>
+                    </div>
+                    @if (signupForm.controls.subdomain.invalid && signupForm.controls.subdomain.touched) {
+                        <span class="text-red-500 text-xs mt-1">Min 3 characters, lowercase letters, numbers, and hyphens only</span>
+                    }
+                </div>
+
+                <!-- Admin Account Section -->
+                <h3 class="text-lg font-semibold text-text-main border-b border-gray-200 pb-2 mt-2">Admin Account</h3>
+
+                <div class="input-group flex flex-col">
+                    <label for="admin_username">Username</label>
+                    <input id="admin_username" type="text" formControlName="admin_username" placeholder="admin" />
+                </div>
+
+                <div class="input-group flex flex-col">
+                    <label for="admin_email">Email</label>
+                    <input id="admin_email" type="email" formControlName="admin_email" placeholder="you@example.com" />
+                </div>
+
+                <div class="input-group flex flex-col">
+                    <label for="admin_password">Password</label>
+                    <input id="admin_password" type="password" formControlName="admin_password" placeholder="Min 6 characters" />
+                </div>
+
+                <!-- Submit -->
+                <button 
+                    class="btn-primary w-full mt-2" 
+                    type="submit" 
+                    [disabled]="isLoading()">
+                    @if (isLoading()) {
+                        Processing...
+                    } @else {
+                        Continue to Payment
+                    }
+                </button>
+            </div>
+        </form>
+
+        <p class="text-xs text-text-muted text-center mt-4">
+            You'll be redirected to Stripe's secure checkout to complete payment.
+        </p>
+    </div>
+</div>

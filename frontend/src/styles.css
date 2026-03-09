@@ -274,4 +274,104 @@
     .footer-link {
         @apply ml-4 hover:underline text-white;
     }
+
+    /* ========= Pricing Page ========= */
+    .pricing-container {
+        @apply max-w-5xl mx-auto py-12 px-4;
+    }
+
+    .plans-grid {
+        @apply grid grid-cols-1 md:grid-cols-3 gap-6;
+    }
+
+    .plan-card {
+        @apply relative p-6 rounded-xl border border-gray-200 bg-card-white shadow-sm;
+        @apply flex flex-col transition-shadow duration-300 hover:shadow-md;
+    }
+
+    .plan-card.highlighted {
+        @apply border-primary border-2 shadow-md;
+    }
+
+    .popular-badge {
+        @apply absolute -top-3 left-1/2 -translate-x-1/2;
+        @apply bg-primary text-white text-xs font-bold px-3 py-1 rounded-full;
+    }
+
+    .price-display {
+        @apply flex items-baseline gap-1 my-4;
+    }
+
+    .features-list {
+        @apply flex flex-col gap-3 my-6 flex-grow;
+    }
+
+    .features-list li {
+        @apply flex items-center gap-2 text-text-main text-sm;
+    }
+
+    .check-icon {
+        @apply w-5 h-5 text-green-500 flex-shrink-0;
+    }
+
+    .select-plan-btn {
+        @apply block text-center bg-gray-100 text-text-main px-6 py-3 rounded-lg font-medium;
+        @apply hover:bg-gray-200 transition-colors duration-200 no-underline;
+        @apply mt-auto;
+    }
+
+    .select-plan-btn.highlighted {
+        @apply bg-primary text-white hover:bg-primary-hover;
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+        @apply relative w-12 h-6 bg-gray-300 rounded-full cursor-pointer transition-colors duration-200;
+    }
+
+    .toggle-switch.active {
+        @apply bg-primary;
+    }
+
+    .toggle-knob {
+        @apply absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200;
+    }
+
+    .toggle-knob.active {
+        @apply translate-x-6;
+    }
+
+    /* ========= Signup Page ========= */
+    .signup-container {
+        @apply flex items-center justify-center min-h-screen py-8 px-4;
+    }
+
+    .signup-card {
+        @apply w-full max-w-md;
+    }
+
+    .subdomain-suffix {
+        @apply bg-gray-100 border border-l-0 border-gray-300 rounded-r px-3 py-2 text-text-muted text-sm whitespace-nowrap;
+    }
+
+    .alert-error {
+        @apply bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm;
+    }
+
+    .alert-success {
+        @apply bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm;
+    }
+
+    button:disabled {
+        @apply opacity-50 cursor-not-allowed;
+    }
+
+    /* ========= Signup Success/Cancel ========= */
+    .result-container {
+        @apply flex items-center justify-center min-h-screen px-4;
+    }
+
+    .result-card {
+        @apply max-w-md w-full;
+    }
 }
