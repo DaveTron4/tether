@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import productController from '../controllers/product.controller.js';
 import { isAdmin } from '../middleware/auth.middleware.js';
+import { requireLimit } from '../middleware/featureGate.middleware.js';
 
 const router = Router();
 
@@ -11,8 +12,8 @@ router.get('/', productController.getAllProducts);
 // Gets a single product by ID
 router.get('/:id', productController.getProductById);
 
-// Creates a new product
-router.post('/', isAdmin as any, productController.createProduct);
+// Creates a new product (enforces plan limit)
+router.post('/', isAdmin as any, requireLimit('maxProducts') as any, productController.createProduct);
 
 // Deletes a product by ID
 router.delete('/:id', isAdmin as any, productController.deleteProductById);

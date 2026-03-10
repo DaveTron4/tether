@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import type { AuthRequest } from '../models/authRequest.interface.js';
 import { stripe } from '../config/stripe.js';
 import { pool } from '../config/database.js';
+import { getTierFromPriceId, PLAN_FEATURES, type SubscriptionTier } from '../config/plans.js';
 import bcrypt from 'bcrypt';
 import type Stripe from 'stripe';
 
@@ -133,6 +134,11 @@ const handleCheckoutCompleted = async (sessionFromEvent: Stripe.Checkout.Session
     const customerId = session.customer as string;
     const subscriptionId = session.subscription as string;
 
+    // Resolve the subscription tier from the Stripe Price ID
+    const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const priceId = stripeSubscription.items.data[0]?.price.id || '';
+    const tier = getTierFromPriceId(priceId);
+
     // Check if tenant already exists (idempotency — webhook can fire multiple times)
     const existing = await pool.query('SELECT id FROM tenants WHERE subdomain = $1', [subdomain]);
     if (existing.rows.length > 0) {
@@ -144,12 +150,12 @@ const handleCheckoutCompleted = async (sessionFromEvent: Stripe.Checkout.Session
     try {
         await client.query('BEGIN');
 
-        // Create tenant
+        // Create tenant with the correct subscription tier
         const tenantResult = await client.query(
-            `INSERT INTO tenants (store_name, subdomain, contact_email, stripe_customer_id, stripe_subscription_id, subscription_status)
-            VALUES ($1, $2, $3, $4, $5, 'active')
+            `INSERT INTO tenants (store_name, subdomain, contact_email, stripe_customer_id, stripe_subscription_id, subscription_status, subscription_tier)
+            VALUES ($1, $2, $3, $4, $5, 'active', $6)
             RETURNING id`,
-            [store_name, subdomain, admin_email, customerId, subscriptionId]
+            [store_name, subdomain, admin_email, customerId, subscriptionId, tier]
         );
         const tenantId = tenantResult.rows[0].id;
 
@@ -195,7 +201,7 @@ const handleInvoicePaymentFailed = async (invoice: Stripe.Invoice) => {
     console.log(`⚠️ Payment failed for customer ${customerId}`);
 };
 
-// customer.subscription.updated → Sync status and tier
+// customer.subscription.updated → Sync status AND tier (handles upgrades/downgrades)
 const handleSubscriptionUpdated = async (subscription: Stripe.Subscription) => {
     const customerId = subscription.customer as string;
     if (!customerId) return;
@@ -214,11 +220,15 @@ const handleSubscriptionUpdated = async (subscription: Stripe.Subscription) => {
 
     const status = statusMap[subscription.status] || 'past_due';
 
+    // Resolve the tier from the current price
+    const priceId = subscription.items.data[0]?.price.id || '';
+    const tier = getTierFromPriceId(priceId);
+
     await pool.query(
-        `UPDATE tenants SET subscription_status = $1, updated_at = NOW() WHERE stripe_customer_id = $2`,
-        [status, customerId]
+        `UPDATE tenants SET subscription_status = $1, subscription_tier = $2, updated_at = NOW() WHERE stripe_customer_id = $3`,
+        [status, tier, customerId]
     );
-    console.log(`🔄 Subscription updated for customer ${customerId}: ${status}`);
+    console.log(`🔄 Subscription updated for customer ${customerId}: status=${status}, tier=${tier}`);
 };
 
 // customer.subscription.deleted → Cancel
@@ -286,7 +296,11 @@ const getSubscriptionStatus = async (req: AuthRequest, res: Response) => {
         return res.status(404).json({ error: 'Tenant not found' });
         }
 
-        return res.json(result.rows[0]);
+        const { subscription_status, subscription_tier } = result.rows[0];
+        const tier = (subscription_tier || 'starter') as SubscriptionTier;
+        const features = PLAN_FEATURES[tier];
+
+        return res.json({ subscription_status, subscription_tier: tier, features });
     } catch (err) {
         console.error('Error fetching subscription status:', err);
         return res.status(500).json({ error: 'Internal Server Error' });

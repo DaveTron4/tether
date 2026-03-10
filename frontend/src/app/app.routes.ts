@@ -10,12 +10,14 @@ import { InventoryDashboard } from './features/inventory/pages/inventory-dashboa
 import { ClientDetail } from './features/crm/pages/client-detail/client-detail';
 import { ClientList } from './features/crm/pages/client-list/client-list';
 import { EmployeeList } from './features/employees/pages/employee-list/employee-list';
+import { Repairs } from './features/repairs/pages/repairs/repairs';
 // import { NotFoundPage } from './shared/pages/not-found/not-found';
 
 // Import Guards
 import { authGuard } from './core/guards/auth-guard';
 import { loginGuard } from './core/guards/login-guard';
 import { adminGuard } from './core/guards/admin-guard';
+import { featureGuard } from './core/guards/feature-guard';
 
 // Import Layouts
 import { MainLayout } from './core/layouts/main-layout/main-layout';
@@ -61,6 +63,11 @@ export const routes: Routes = [
             // ====================
             { path: 'employees', component: EmployeeList, canActivate: [adminGuard] },
         
+            // =====================
+            // Repairs routes (Pro+ feature)
+            // ====================
+            { path: 'repairs', component: Repairs, canActivate: [featureGuard('repairs')] },
+
             // =====================
             // Default route
             // ====================

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import clientController from '../controllers/client.controller.js';
 import { isAdmin } from '../middleware/auth.middleware.js';
+import { requireLimit } from '../middleware/featureGate.middleware.js';
 
 const router = Router();
 
@@ -14,8 +15,8 @@ router.get('/:id/summary', clientController.getClientSummary);
 // Gets a single client by ID
 router.get('/:id', clientController.getClientById);
 
-// Creates a new client
-router.post('/', isAdmin as any, clientController.createClient);
+// Creates a new client (enforces plan limit)
+router.post('/', isAdmin as any, requireLimit('maxClients') as any, clientController.createClient);
 
 // Updates an existing client
 router.put('/:id', isAdmin as any, clientController.updateClient);

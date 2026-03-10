@@ -1,6 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { PlanFeatures } from '../../shared/models/planFeatures.interface';
+
+
+export interface SubscriptionStatusResponse {
+  subscription_status: string;
+  subscription_tier: string;
+  features: PlanFeatures;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -28,7 +36,7 @@ export class StripeService {
    * Gets the current subscription status for the authenticated tenant.
    */
   getSubscriptionStatus() {
-    return this.http.get<{ subscription_status: string; subscription_tier: string }>(`${this.apiUrl}/subscription-status`);
+    return this.http.get<SubscriptionStatusResponse>(`${this.apiUrl}/subscription-status`);
   }
 
   /**

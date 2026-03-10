@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { AuthResponse } from '../../shared/models/authResponse.interface';
 import { environment } from '../../../environments/environment';
+import { PlanService } from './plan';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,7 @@ export class AuthService {
 
   private http = inject(HttpClient);
   private router = inject(Router);
+  private planService = inject(PlanService);
   
   private apiUrl = `${environment.apiUrl}/auth`;
 
@@ -50,6 +52,7 @@ export class AuthService {
     localStorage.removeItem('tether_user');
 
     this.currentUser.set(null);
+    this.planService.clear();
 
     this.router.navigate(['/login']);
   }

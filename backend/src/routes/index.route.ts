@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {isSuperAdmin, verifyToken} from '../middleware/auth.middleware.js';
 import { requireActiveSubscription } from '../middleware/subscription.middleware.js';
+import { requireFeature } from '../middleware/featureGate.middleware.js';
 
 // Route imports
 import authRoutes from './auth.route.js';
@@ -32,14 +33,14 @@ router.use('/clients', verifyToken as any, requireActiveSubscription as any, cli
 // Payment History routes
 router.use('/payment-histories', verifyToken as any, requireActiveSubscription as any, paymentHistoryRoutes);
 
-// Subscription routes
-router.use('/subscriptions', verifyToken as any, requireActiveSubscription as any, subscriptionRoutes);
+// Subscription routes (client phone/wifi subscriptions — Pro+ feature)
+router.use('/subscriptions', verifyToken as any, requireActiveSubscription as any, requireFeature('subscriptions') as any, subscriptionRoutes);
 
 // Product routes
 router.use('/products', verifyToken as any, requireActiveSubscription as any, productRouter);
 
-// Repair routes
-router.use('/repairs', verifyToken as any, requireActiveSubscription as any, repairRoutes);
+// Repair routes (Pro+ feature)
+router.use('/repairs', verifyToken as any, requireActiveSubscription as any, requireFeature('repairs') as any, repairRoutes);
 
 // Sale routes
 router.use('/sales', verifyToken as any, requireActiveSubscription as any, saleRoutes);
