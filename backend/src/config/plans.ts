@@ -34,13 +34,16 @@ export const PLAN_FEATURES: Record<SubscriptionTier, PlanFeatures> = {
 // ==========================================
 // Stripe Price ID → Tier Mapping
 // ==========================================
-// Map your Stripe Price IDs to subscription tiers.
-// Set these in .env and they'll be loaded here.
+// Maps both monthly and yearly Stripe Price IDs to their tier.
+// The billing interval doesn't affect which features you get — only the tier matters.
 
 export const PRICE_TO_TIER: Record<string, SubscriptionTier> = {
-  [process.env.STRIPE_PRICE_STARTER || '']: 'starter',
-  [process.env.STRIPE_PRICE_PRO || '']: 'pro',
-  [process.env.STRIPE_PRICE_ENTERPRISE || '']: 'enterprise',
+  [process.env.STRIPE_PRICE_STARTER_MONTHLY || '']: 'starter',
+  [process.env.STRIPE_PRICE_STARTER_YEARLY || '']: 'starter',
+  [process.env.STRIPE_PRICE_PRO_MONTHLY || '']: 'pro',
+  [process.env.STRIPE_PRICE_PRO_YEARLY || '']: 'pro',
+  [process.env.STRIPE_PRICE_ENTERPRISE_MONTHLY || '']: 'enterprise',
+  [process.env.STRIPE_PRICE_ENTERPRISE_YEARLY || '']: 'enterprise',
 };
 
 /**

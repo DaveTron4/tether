@@ -1,8 +1,9 @@
-import { Component, HostListener, ElementRef } from '@angular/core';
+import { Component, HostListener, ElementRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 // Services
 import { AuthService } from '../../../core/services/auth';
+import { PlanService } from '../../../core/services/plan';
 
 @Component({
   selector: 'app-header',
@@ -12,6 +13,7 @@ import { AuthService } from '../../../core/services/auth';
 })
 export class Header {
   dropdownOpen = false;
+  planService = inject(PlanService);
 
   constructor(public authService: AuthService, private el: ElementRef) {}
 

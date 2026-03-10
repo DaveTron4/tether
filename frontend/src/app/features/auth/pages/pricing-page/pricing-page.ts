@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-pricing-page',
@@ -15,8 +16,8 @@ export class PricingPage {
       name: 'Starter',
       monthlyPrice: 19,
       yearlyPrice: 99,
-      monthlyPriceId: 'price_1T8v9R2FezLz3MJhGricPnUc', // Replace with real Stripe price IDs
-      yearlyPriceId: 'price_1T8u9H2FezLz3MJhmTHyqdll',
+      monthlyPriceId: environment.stripePrices.starterMonthly,
+      yearlyPriceId: environment.stripePrices.starterYearly,
       features: [
         'Up to 3 users',
         'Up to 100 clients',
@@ -30,8 +31,8 @@ export class PricingPage {
       name: 'Pro',
       monthlyPrice: 59,
       yearlyPrice: 590,
-      monthlyPriceId: 'price_1T8v4a2FezLz3MJhePAUu65C',
-      yearlyPriceId: 'price_1T8v5Y2FezLz3MJhxNUdkcxh',
+      monthlyPriceId: environment.stripePrices.proMonthly,
+      yearlyPriceId: environment.stripePrices.proYearly,
       features: [
         'Up to 10 users',
         'Up to 500 clients',
@@ -46,8 +47,8 @@ export class PricingPage {
       name: 'Enterprise',
       monthlyPrice: 99,
       yearlyPrice: 990,
-      monthlyPriceId: 'price_1T8v682FezLz3MJhWQnkj7gt',
-      yearlyPriceId: 'price_1T8v6r2FezLz3MJh9jZNHdbD',
+      monthlyPriceId: environment.stripePrices.enterpriseMonthly,
+      yearlyPriceId: environment.stripePrices.enterpriseYearly,
       features: [
         'Unlimited users',
         'Unlimited clients',

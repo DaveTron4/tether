@@ -23,7 +23,9 @@ Tether is a multi-tenant B2B SaaS application built for independent cell phone r
 - 💳 **POS & Sales** — Transactional checkout with sale items, stock deduction, and receipts
 - 📱 **Subscription Management** — Phone & WiFi plan tracking with payment history
 - 🔐 **Role-Based Access** — Superadmin → Admin → Employee hierarchy
-- 🚀 **RESTful API** — Fully tenant-scoped Express API with JWT authentication
+- � **Stripe Billing** — Checkout, webhooks, billing portal, and tiered subscription plans
+- 🚪 **Feature Gating** — Module access and entity limits enforced per subscription tier
+- �🚀 **RESTful API** — Fully tenant-scoped Express API with JWT authentication
 
 ## 📊 Progress
 
@@ -37,14 +39,17 @@ Tether is a multi-tenant B2B SaaS application built for independent cell phone r
 - [x] **Repairs Module** — Repair ticket CRUD with cost tracking and status workflow
 - [x] **Sales Module** — Transactional POS with sale items, stock deduction, and receipt generation
 - [x] **Subscriptions Module** — Subscription CRUD with payment history and status tracking
-- [x] **Frontend** — Angular SPA with auth guards, interceptors, responsive layouts, and Tailwind CSS v4
+- [x] **Stripe Integration** — Checkout sessions, webhook handling, billing portal, and subscription status sync
+- [x] **Feature Gating** — Tier-based module access (`requireFeature`) and entity limits (`requireLimit`) enforced via middleware
+- [x] **Frontend** — Angular SPA with auth guards, feature guards, interceptors, responsive layouts, and Tailwind CSS v4
 
 ### 🔲 Upcoming
 - [ ] **Frontend White-Labeling** — Subdomain detection, branding API, dynamic Tailwind CSS variables via Angular Signals
 - [ ] **Branding API** — Public `GET /api/tenants/brand?subdomain=` endpoint for unauthenticated branding fetch
 - [ ] **Row-Level Security** — PostgreSQL RLS policies per tenant
-- [ ] **Stripe Integration** — Tenant billing and subscription management
+- [ ] **Multi-Location Support** — Multiple store locations per tenant with per-location inventory, employees, and analytics
 - [ ] **Reporting & Analytics** — Sales reports, inventory alerts, repair metrics
+- [ ] **Email Campaigns** — Personalized automated emails for reminders, promotions, and notifications
 
 ## 🏗️ Project Structure
 
@@ -60,7 +65,9 @@ tether/
 │       ├── index.ts
 │       ├── config/
 │       │   ├── database.ts
-│       │   └── reset.ts
+│       │   ├── plans.ts
+│       │   ├── reset.ts
+│       │   └── stripe.ts
 │       ├── controllers/
 │       │   ├── auth.controller.ts
 │       │   ├── client.controller.ts
@@ -68,13 +75,16 @@ tether/
 │       │   ├── product.controller.ts
 │       │   ├── repair.controller.ts
 │       │   ├── sale.controller.ts
+│       │   ├── stripe.controller.ts
 │       │   ├── subscription.controller.ts
 │       │   ├── tenants.controller.ts
 │       │   └── user.controller.ts
 │       ├── data/
 │       │   └── schema.sql
 │       ├── middleware/
-│       │   └── auth.middleware.ts
+│       │   ├── auth.middleware.ts
+│       │   ├── featureGate.middleware.ts
+│       │   └── subscription.middleware.ts
 │       ├── models/
 │       │   ├── authRequest.interface.ts
 │       │   ├── client.interface.ts
@@ -93,6 +103,7 @@ tether/
 │           ├── product.route.ts
 │           ├── repair.route.ts
 │           ├── sale.route.ts
+│           ├── stripe.route.ts
 │           ├── subscription.route.ts
 │           ├── tenants.route.ts
 │           └── user.route.ts
@@ -119,6 +130,7 @@ tether/
 │           │   ├── guards/
 │           │   │   ├── admin-guard.ts
 │           │   │   ├── auth-guard.ts
+│           │   │   ├── feature-guard.ts
 │           │   │   ├── leave-guard.ts
 │           │   │   └── login-guard.ts
 │           │   ├── interceptors/
@@ -129,6 +141,8 @@ tether/
 │           │       ├── auth.ts
 │           │       ├── client.ts
 │           │       ├── employee.ts
+│           │       ├── plan.ts
+│           │       ├── stripe.ts
 │           │       ├── subscription.ts
 │           │       └── theme.ts
 │           ├── features/
@@ -174,6 +188,7 @@ tether/
 - **Express.js 5** - Web framework
 - **TypeScript** - Type-safe development
 - **PostgreSQL** - Relational database with multi-tenant schema
+- **Stripe** - Billing, subscriptions, and checkout
 - **node-pg** - PostgreSQL client
 - **JWT** - JSON Web Token authentication
 - **bcrypt** - Password hashing
@@ -198,6 +213,48 @@ tether/
 2. **Admin** logs in and registers employees for their tenant (protected by `verifyToken` + `isAdmin` middleware)
 3. **Employees** log in and work within their tenant's data (protected by `verifyToken` middleware)
 4. No public registration — accounts are created by authorized users only
+
+## 💳 Stripe Integration & Subscription Tiers
+
+### Billing Flow
+1. **New tenant** selects a plan on the pricing page → redirected to Stripe Checkout
+2. **Stripe webhook** (`checkout.session.completed`) creates the tenant + admin user in the database
+3. **Subscription lifecycle** events (`invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated`, `customer.subscription.deleted`) keep the tenant's `subscription_status` and `subscription_tier` in sync
+4. **Admins** can manage billing via Stripe's Billing Portal (upgrade, downgrade, cancel, update payment method)
+
+### Subscription Tiers
+
+| Feature | 🟢 Starter ($19/mo) | 🔵 Pro ($59/mo) | 🟣 Enterprise ($99/mo) |
+|---|:---:|:---:|:---:|
+| **Employees** | 3 | 15 | Unlimited |
+| **Locations** | 1 | 3 | Unlimited |
+| **Clients** | 250 | 2,000 | Unlimited |
+| **Products** | 500 | 5,000 | Unlimited |
+| **Inventory & POS** | ✅ | ✅ | ✅ |
+| **Client CRM** | ✅ | ✅ | ✅ |
+| **Repair Tracking** | — | ✅ | ✅ |
+| **Subscription Tracking** | — | ✅ | ✅ |
+| **Custom Branding** | — | ✅ | ✅ |
+| **Reports** | — | ✅ | ✅ |
+| **Analytics** | — | — | ✅ |
+| **Multi-Location Hub** | — | — | ✅ |
+| **Email Campaigns** | — | — | ✅ |
+| **API Access** | — | — | ✅ |
+
+> All tiers support both **monthly** and **yearly** billing cycles. Yearly plans offer a discounted rate.
+
+### Feature Gating
+
+Feature access is enforced at **two layers**:
+
+- **Backend** — `requireFeature(module)` middleware blocks API routes for modules not included in the tenant's tier. `requireLimit(key)` middleware blocks entity creation when the tenant has reached their plan's cap (employees, clients, products).
+- **Frontend** — `featureGuard(module)` Angular route guard prevents navigation to gated pages. `PlanService` exposes the tenant's features via signals for conditional UI rendering.
+
+| Middleware | Purpose | Example |
+|---|---|---|
+| `requireActiveSubscription` | Blocks all access if subscription is inactive | Applied to all protected routes |
+| `requireFeature('repairs')` | Blocks repair endpoints for Starter tenants | Applied to `/api/repairs` |
+| `requireLimit('maxClients')` | Blocks client creation at plan cap | Applied to `POST /api/clients` |
 
 ## 🚀 Getting Started
 
@@ -295,7 +352,13 @@ All data endpoints (except login and health) require a valid JWT token via `Auth
 
 ### Auth
 - `POST /api/auth/login` - User login (returns JWT)
-- `POST /api/auth/register` - Register employee (Admin only)
+- `POST /api/auth/register` - Register employee (Admin only, enforces employee limit)
+
+### Stripe
+- `POST /api/stripe/checkout` - Create Stripe Checkout session (public)
+- `POST /api/stripe/webhook` - Stripe webhook handler (public, raw body)
+- `POST /api/stripe/billing-portal` - Create billing portal session (Admin only)
+- `GET /api/stripe/subscription-status` - Get tenant subscription status, tier, and features
 
 ### Tenants (Superadmin only — requires `x-super-admin-secret` header)
 - `GET /api/tenants` - Get all tenants
@@ -307,18 +370,18 @@ All data endpoints (except login and health) require a valid JWT token via `Auth
 - `GET /api/clients` - Get all clients
 - `GET /api/clients/:id` - Get client by ID
 - `GET /api/clients/:id/summary` - Get client lifetime value & summary
-- `POST /api/clients` - Create new client
+- `POST /api/clients` - Create new client *(enforces client limit)*
 - `PUT /api/clients/:id` - Update client
 - `DELETE /api/clients/:id` - Delete client
 
 ### Products
 - `GET /api/products` - Get all products
 - `GET /api/products/:id` - Get product by ID
-- `POST /api/products` - Create new product
+- `POST /api/products` - Create new product *(enforces product limit)*
 - `PUT /api/products/:id` - Update product
 - `DELETE /api/products/:id` - Delete product
 
-### Repairs
+### Repairs *(Pro+ only)*
 - `GET /api/repairs` - Get all repair tickets
 - `GET /api/repairs/:id` - Get repair by ID
 - `GET /api/repairs?client_id=` - Get repairs by client
@@ -330,7 +393,7 @@ All data endpoints (except login and health) require a valid JWT token via `Auth
 - `GET /api/sales/:id` - Get sale with items (receipt)
 - `POST /api/sales` - Create sale (transactional checkout)
 
-### Subscriptions
+### Subscriptions *(Pro+ only)*
 - `GET /api/subscriptions?client_id=` - Get client subscriptions
 - `POST /api/subscriptions` - Create subscription
 - `PUT /api/subscriptions/:id` - Update subscription
@@ -423,6 +486,15 @@ Payment History: id, tenant_id, subscription_id, amount_paid, status, created_at
 | `JWT_EXPIRES_IN` | JWT token expiration | `1h` |
 | `SUPER_ADMIN_SECRET` | Secret key for superadmin endpoints | — |
 | `ADMIN_PASSWORD` | Default admin password for DB seeding | — |
+| `STRIPE_SECRET_KEY` | Stripe secret API key | — |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret | — |
+| `FRONTEND_URL` | Frontend URL for Stripe redirects | `http://localhost:4200` |
+| `STRIPE_PRICE_STARTER_MONTHLY` | Stripe Price ID for Starter monthly | — |
+| `STRIPE_PRICE_STARTER_YEARLY` | Stripe Price ID for Starter yearly | — |
+| `STRIPE_PRICE_PRO_MONTHLY` | Stripe Price ID for Pro monthly | — |
+| `STRIPE_PRICE_PRO_YEARLY` | Stripe Price ID for Pro yearly | — |
+| `STRIPE_PRICE_ENTERPRISE_MONTHLY` | Stripe Price ID for Enterprise monthly | — |
+| `STRIPE_PRICE_ENTERPRISE_YEARLY` | Stripe Price ID for Enterprise yearly | — |
 
 ## 📝 Development Scripts
 

@@ -1,5 +1,7 @@
 <header class="header">
-  <div class="logo">Tether</div>
+  <div class="logo">Tether
+    <span class="plan-badge">{{ planService.tier() }}</span>
+  </div>
   <div class="profile" (click)="toggleDropdown()" tabindex="0">
     <div class="initials">
       {{ initialLetters }}

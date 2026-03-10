@@ -1,0 +1,12 @@
+.plan-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: var(--accent, #CCAF2B);
+  color: var(--primary, #454796);
+  margin-left: 8px;
+  vertical-align: middle;
+}
