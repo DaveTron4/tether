@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { verifyToken } from '../middleware/auth.middleware.js';
-import { createCheckoutSession, createBillingPortalSession, getSubscriptionStatus } from '../controllers/stripe.controller.js';
+import { createCheckoutSession, createBillingPortalSession, getSubscriptionStatus, confirmCheckoutProvisioning } from '../controllers/stripe.controller.js';
 
 const router = Router();
 
 // Public: New tenant signup → Stripe Checkout
 router.post('/checkout', createCheckoutSession as any);
+// Public: Confirm provisioning (frontend polls success page)
+router.get('/checkout/confirm', confirmCheckoutProvisioning as any);
 
 // Webhook is handled at the app level in index.ts (needs raw body before express.json())
 

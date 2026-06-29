@@ -2,7 +2,10 @@ import type { Request, Response } from 'express';
 import type { AuthRequest } from '../models/authRequest.interface.js';
 import { stripe } from '../config/stripe.js';
 import { pool } from '../config/database.js';
-import { getTierFromPriceId, PLAN_FEATURES, type SubscriptionTier } from '../config/plans.js';
+import { getTierFromPriceId, PLAN_FEATURES, normalizeSubscriptionTier, type SubscriptionTier } from '../config/plans.js';
+import { provisionTenantFromCheckoutSession } from '../services/stripeProvisioning.service.js';
+import { retrieveSession } from '../services/stripeClient.service.js';
+import { handleInvoicePaid, handleInvoicePaymentFailed, handleSubscriptionUpdated, handleSubscriptionDeleted } from '../services/subscription.service.js';
 import bcrypt from 'bcrypt';
 import type Stripe from 'stripe';
 
@@ -23,6 +26,18 @@ const createCheckoutSession = async (req: Request, res: Response) => {
         // Validate subdomain format (lowercase alphanumeric + hyphens)
         if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(subdomain) || subdomain.length < 3) {
             return res.status(400).json({ error: 'Subdomain must be at least 3 characters, lowercase alphanumeric with hyphens only' });
+        }
+
+        // validate price_id against known Stripe Price IDs
+        const validPriceIds = Object.keys(getTierFromPriceId as any).filter(key => key.startsWith('price_'));
+
+        if (!validPriceIds.includes(price_id)) {
+            return res.status(400).json({ error: 'Invalid price_id' });
+        }
+
+        // validate password strength (at least 8 characters, one uppercase, one lowercase, one number)
+        if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(admin_password)) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters, include one uppercase letter, one lowercase letter, and one number' });
         }
 
         // Check if subdomain is already taken
@@ -115,6 +130,26 @@ const handleWebhook = async (req: Request, res: Response) => {
     }
 };
 
+// Optional confirm endpoint to allow frontend to probe provisioning
+const confirmCheckoutProvisioning = async (req: Request, res: Response) => {
+    try {
+            const sessionId = String(req.query.session_id || '');
+            if (!sessionId) return res.status(400).json({ error: 'session_id is required' });
+
+            const session = await retrieveSession(sessionId) as Stripe.Checkout.Session;
+
+            // If the session is not paid and has no subscription, provisioning cannot proceed yet
+            const paid = (session.payment_status === 'paid') || !!session.subscription;
+            if (!paid) return res.status(409).json({ error: 'Checkout not paid or subscription not active yet' });
+
+            await provisionTenantFromCheckoutSession(session);
+            return res.json({ ok: true });
+    } catch (err) {
+            console.error('Error confirming checkout provisioning:', err);
+            return res.status(500).json({ error: 'Provisioning confirmation failed' });
+    }
+};
+
 // ==========================================
 // Webhook Handlers
 // ==========================================
@@ -124,124 +159,9 @@ const handleCheckoutCompleted = async (sessionFromEvent: Stripe.Checkout.Session
     // Always retrieve the full session from Stripe to ensure metadata is included
     const session = await stripe.checkout.sessions.retrieve(sessionFromEvent.id);
 
-    const { store_name, subdomain, admin_username, admin_email, admin_password_hash } = session.metadata || {};
-
-    if (!store_name || !subdomain || !admin_username || !admin_email || !admin_password_hash) {
-        console.error('Checkout session missing required metadata:', session.id, session.metadata);
-        return;
-    }
-
-    const customerId = session.customer as string;
-    const subscriptionId = session.subscription as string;
-
-    // Resolve the subscription tier from the Stripe Price ID
-    const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
-    const priceId = stripeSubscription.items.data[0]?.price.id || '';
-    const tier = getTierFromPriceId(priceId);
-
-    // Check if tenant already exists (idempotency — webhook can fire multiple times)
-    const existing = await pool.query('SELECT id FROM tenants WHERE subdomain = $1', [subdomain]);
-    if (existing.rows.length > 0) {
-        console.log(`Tenant ${subdomain} already exists, skipping creation`);
-        return;
-    }
-
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN');
-
-        // Create tenant with the correct subscription tier
-        const tenantResult = await client.query(
-            `INSERT INTO tenants (store_name, subdomain, contact_email, stripe_customer_id, stripe_subscription_id, subscription_status, subscription_tier)
-            VALUES ($1, $2, $3, $4, $5, 'active', $6)
-            RETURNING id`,
-            [store_name, subdomain, admin_email, customerId, subscriptionId, tier]
-        );
-        const tenantId = tenantResult.rows[0].id;
-
-        // Create admin user
-        await client.query(
-            `INSERT INTO users (tenant_id, username, email, password_hash, full_name, role)
-            VALUES ($1, $2, $3, $4, $5, 'admin')`,
-            [tenantId, admin_username, admin_email, admin_password_hash, admin_username]
-        );
-
-        await client.query('COMMIT');
-        console.log(`✅ Tenant "${store_name}" (${subdomain}) created via Stripe checkout`);
-    } catch (err) {
-        await client.query('ROLLBACK');
-        console.error('Error creating tenant from checkout:', err);
-        throw err;
-    } finally {
-        client.release();
-    }
+    await provisionTenantFromCheckoutSession(session);
 };
 
-// invoice.paid → Activate subscription
-const handleInvoicePaid = async (invoice: Stripe.Invoice) => {
-    const customerId = invoice.customer as string;
-    if (!customerId) return;
-
-    await pool.query(
-        `UPDATE tenants SET subscription_status = 'active', updated_at = NOW() WHERE stripe_customer_id = $1`,
-        [customerId]
-    );
-    console.log(`✅ Tenant subscription activated for customer ${customerId}`);
-};
-
-// invoice.payment_failed → Mark as past_due
-const handleInvoicePaymentFailed = async (invoice: Stripe.Invoice) => {
-    const customerId = invoice.customer as string;
-    if (!customerId) return;
-
-    await pool.query(
-        `UPDATE tenants SET subscription_status = 'past_due', updated_at = NOW() WHERE stripe_customer_id = $1`,
-        [customerId]
-    );
-    console.log(`⚠️ Payment failed for customer ${customerId}`);
-};
-
-// customer.subscription.updated → Sync status AND tier (handles upgrades/downgrades)
-const handleSubscriptionUpdated = async (subscription: Stripe.Subscription) => {
-    const customerId = subscription.customer as string;
-    if (!customerId) return;
-
-    // Map Stripe status to our status
-    const statusMap: Record<string, string> = {
-        active: 'active',
-        past_due: 'past_due',
-        canceled: 'canceled',
-        unpaid: 'past_due',
-        trialing: 'trialing',
-        incomplete: 'past_due',
-        incomplete_expired: 'canceled',
-        paused: 'past_due',
-    };
-
-    const status = statusMap[subscription.status] || 'past_due';
-
-    // Resolve the tier from the current price
-    const priceId = subscription.items.data[0]?.price.id || '';
-    const tier = getTierFromPriceId(priceId);
-
-    await pool.query(
-        `UPDATE tenants SET subscription_status = $1, subscription_tier = $2, updated_at = NOW() WHERE stripe_customer_id = $3`,
-        [status, tier, customerId]
-    );
-    console.log(`🔄 Subscription updated for customer ${customerId}: status=${status}, tier=${tier}`);
-};
-
-// customer.subscription.deleted → Cancel
-const handleSubscriptionDeleted = async (subscription: Stripe.Subscription) => {
-    const customerId = subscription.customer as string;
-    if (!customerId) return;
-
-    await pool.query(
-        `UPDATE tenants SET subscription_status = 'canceled', updated_at = NOW() WHERE stripe_customer_id = $1`,
-        [customerId]
-    );
-    console.log(`❌ Subscription canceled for customer ${customerId}`);
-};
 
 // ==========================================
 // 3. BILLING PORTAL (Authenticated tenants)
@@ -297,7 +217,7 @@ const getSubscriptionStatus = async (req: AuthRequest, res: Response) => {
         }
 
         const { subscription_status, subscription_tier } = result.rows[0];
-        const tier = (subscription_tier || 'starter') as SubscriptionTier;
+        const tier = normalizeSubscriptionTier(subscription_tier);
         const features = PLAN_FEATURES[tier];
 
         return res.json({ subscription_status, subscription_tier: tier, features });
@@ -307,4 +227,4 @@ const getSubscriptionStatus = async (req: AuthRequest, res: Response) => {
     }
 };
 
-export { createCheckoutSession, handleWebhook, createBillingPortalSession, getSubscriptionStatus };
+export { createCheckoutSession, handleWebhook, createBillingPortalSession, getSubscriptionStatus, confirmCheckoutProvisioning };

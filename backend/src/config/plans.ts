@@ -7,6 +7,14 @@ import type { PlanFeatures } from '../models/planFeatures.interface.js';
 
 export type SubscriptionTier = 'starter' | 'pro' | 'enterprise';
 
+export const isSubscriptionTier = (tier: unknown): tier is SubscriptionTier => {
+  return tier === 'starter' || tier === 'pro' || tier === 'enterprise';
+};
+
+export const normalizeSubscriptionTier = (tier: unknown): SubscriptionTier => {
+  return isSubscriptionTier(tier) ? tier : 'starter';
+};
+
 export const PLAN_FEATURES: Record<SubscriptionTier, PlanFeatures> = {
   starter: {
     maxEmployees: 3,

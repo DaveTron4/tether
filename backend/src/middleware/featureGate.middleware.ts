@@ -1,7 +1,7 @@
 import type { Response, NextFunction } from 'express';
 import type { AuthRequest } from '../models/authRequest.interface.js';
 import { pool } from '../config/database.js';
-import { PLAN_FEATURES, type SubscriptionTier } from '../config/plans.js';
+import { PLAN_FEATURES, normalizeSubscriptionTier, type SubscriptionTier } from '../config/plans.js';
 
 // ==========================================
 // Feature Gate Middleware
@@ -22,7 +22,7 @@ export const requireFeature = (feature: string) => {
         [req.user.tenant_id]
       );
 
-      const tier = (result.rows[0]?.subscription_tier || 'starter') as SubscriptionTier;
+      const tier = normalizeSubscriptionTier(result.rows[0]?.subscription_tier);
       const plan = PLAN_FEATURES[tier];
 
       if (!plan || !plan.modules.includes(feature)) {
@@ -72,7 +72,7 @@ export const requireLimit = (limitKey: LimitKey) => {
         [req.user.tenant_id]
       );
 
-      const tier = (result.rows[0]?.subscription_tier || 'starter') as SubscriptionTier;
+      const tier = normalizeSubscriptionTier(result.rows[0]?.subscription_tier);
       const plan = PLAN_FEATURES[tier];
       const limit = plan[limitKey];
 
