@@ -1,1 +1,70 @@
-<p>tab-overview works!</p>
+<div class="flex flex-col gap-6 p-6">
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="text-center text-gray-500">
+    <p>Loading overview data...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error()" class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+    {{ error() }}
+  </div>
+
+  <ng-container *ngIf="!loading()">
+    <!-- Payment Summary Section -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <!-- Balance Due Card -->
+      <div class="p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-lg border border-red-200">
+        <p class="text-xs text-red-600 uppercase tracking-wide font-semibold mb-2">Balance Due</p>
+        <p class="text-3xl font-bold text-red-700">${{ balanceDue.toFixed(2) }}</p>
+      </div>
+
+      <!-- Active Subscriptions Card -->
+      <div class="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+        <p class="text-xs text-blue-600 uppercase tracking-wide font-semibold mb-2">Active Plans</p>
+        <p class="text-3xl font-bold text-blue-700">{{ activeSubscriptionsCount }}</p>
+      </div>
+
+      <!-- Paid Subscriptions Card -->
+      <div class="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
+        <p class="text-xs text-green-600 uppercase tracking-wide font-semibold mb-2">Paid Plans</p>
+        <p class="text-3xl font-bold text-green-700">{{ paidSubscriptionsCount }}</p>
+      </div>
+
+      <!-- Unpaid Subscriptions Card -->
+      <div class="p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border border-orange-200">
+        <p class="text-xs text-orange-600 uppercase tracking-wide font-semibold mb-2">Unpaid Plans</p>
+        <p class="text-3xl font-bold text-orange-700">{{ unpaidSubscriptionsCount }}</p>
+      </div>
+    </div>
+
+    <!-- Subscriptions Section -->
+    <div class="flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold text-gray-900">Subscriptions</h2>
+        <div class="flex gap-2">
+          <button (click)="refresh()" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
+            <lucide-icon name="refresh-cw" class="w-4 h-4"></lucide-icon>
+            Refresh
+          </button>
+          <button class="px-3 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-2">
+            <lucide-icon name="plus" class="w-4 h-4"></lucide-icon>
+            Add Subscription
+          </button>
+        </div>
+      </div>
+
+      <!-- Subscriptions List -->
+      <div *ngIf="subscriptions().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <app-subscription-card *ngFor="let sub of subscriptions()" [subscription]="sub"></app-subscription-card>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="subscriptions().length === 0" class="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
+        <p class="text-gray-600 mb-4">No subscriptions found for this customer</p>
+        <button class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors">
+          Create First Subscription
+        </button>
+      </div>
+    </div>
+  </ng-container>
+</div>

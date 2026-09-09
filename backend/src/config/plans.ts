@@ -21,7 +21,7 @@ export const PLAN_FEATURES: Record<SubscriptionTier, PlanFeatures> = {
     maxLocations: 1,
     maxClients: 250,
     maxProducts: 500,
-    modules: ['inventory', 'sales', 'clients'],
+    modules: ['inventory', 'sales', 'clients', 'subscriptions'],
   },
   pro: {
     maxEmployees: 15,

@@ -1,1 +1,63 @@
-<p>subscription-card works!</p>
+<div *ngIf="subscription" class="p-4 bg-white rounded-lg shadow border border-gray-200 hover:shadow-md transition-shadow">
+  <!-- Header with Service Type and Status -->
+  <div class="flex items-start justify-between mb-4">
+    <div class="flex items-center gap-3">
+      <div class="p-2 bg-primary-light rounded-lg text-primary">
+        <lucide-icon [name]="serviceIcon()" class="w-5 h-5"></lucide-icon>
+      </div>
+      <div class="flex flex-col gap-1">
+        <h3 class="font-semibold text-gray-900">{{ subscription.service_type }}</h3>
+        <p class="text-sm text-gray-600">{{ subscription.carrier }}</p>
+      </div>
+    </div>
+
+    <!-- Status Badge -->
+    <div [class.bg-green-50]="statusColor() === 'green'" 
+         [class.bg-red-50]="statusColor() === 'red'"
+         [class.bg-orange-50]="statusColor() === 'orange'"
+         class="px-3 py-1 rounded-full flex items-center gap-2">
+      <lucide-icon [name]="statusIcon()" 
+                   [class.text-green-600]="statusColor() === 'green'"
+                   [class.text-red-600]="statusColor() === 'red'"
+                   [class.text-orange-600]="statusColor() === 'orange'"
+                   class="w-4 h-4"></lucide-icon>
+      <span [class.text-green-700]="statusColor() === 'green'"
+            [class.text-red-700]="statusColor() === 'red'"
+            [class.text-orange-700]="statusColor() === 'orange'"
+            class="text-xs font-semibold">{{ subscription.status }}</span>
+    </div>
+  </div>
+
+  <hr class="border-gray-200 mb-4">
+
+  <!-- Plan Details -->
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-2">
+      <lucide-icon name="dollar-sign" class="w-4 h-4 text-gray-500"></lucide-icon>
+      <span class="text-sm text-gray-600">Plan Amount</span>
+    </div>
+    <span class="font-semibold text-gray-900">{{ formattedAmount }}</span>
+  </div>
+
+  <!-- Payment Due Day -->
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-2">
+      <lucide-icon name="calendar" class="w-4 h-4 text-gray-500"></lucide-icon>
+      <span class="text-sm text-gray-600">Due Day</span>
+    </div>
+    <span class="font-semibold text-gray-900">{{ subscription.payment_due_day || 'N/A' }}</span>
+  </div>
+
+  <!-- Last Payment -->
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <lucide-icon name="clock" class="w-4 h-4 text-gray-500"></lucide-icon>
+      <span class="text-sm text-gray-600">Last Payment</span>
+    </div>
+    <span class="text-sm text-gray-900">{{ formattedLastPayment }}</span>
+  </div>
+</div>
+
+<div *ngIf="!subscription" class="p-4 bg-gray-50 rounded-lg text-center text-gray-500">
+  No subscription data available
+</div>

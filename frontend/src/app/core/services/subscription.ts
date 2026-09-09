@@ -10,6 +10,12 @@ export class SubscriptionService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/subscriptions`;
 
+  getClientSubscriptions(clientId: number) {
+    const token = localStorage.getItem('tether_token');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<Subscription[]>(`${this.apiUrl}?client_id=${clientId}`, { headers });
+  }
+
   createSubscription(subscription: Subscription) {
     const token = localStorage.getItem('tether_token');
     const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;

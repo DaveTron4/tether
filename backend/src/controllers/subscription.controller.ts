@@ -14,6 +14,8 @@ const getClientSubscriptions = async (req: AuthRequest, res: Response) => {
             return res.status(400).json({ error: 'Client ID is required' });
         }
 
+        console.log('Fetching subscriptions for client:', { client_id, tenant_id: req.user.tenant_id });
+
         const result = await pool.query(
             `SELECT * FROM subscriptions 
              WHERE client_id = $1 AND tenant_id = $2
@@ -21,13 +23,16 @@ const getClientSubscriptions = async (req: AuthRequest, res: Response) => {
             [client_id, req.user.tenant_id]
         );
 
+        console.log('Found subscriptions:', result.rows.length);
+        
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'No subscriptions found for this client' });
+            return res.status(200).json([]);
         }
         
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: 'Server error' });
+        console.error('Error fetching subscriptions:', err);
+        res.status(500).json({ error: 'Server error', details: err instanceof Error ? err.message : 'Unknown error' });
     }
 };
 
@@ -37,6 +42,13 @@ const createSubscription = async (req: AuthRequest, res: Response) => {
         if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
         const { client_id, service_type, carrier, plan_amount, payment_due_day } = req.body;
 
+        // Validate required fields
+        if (!client_id || !service_type || !carrier || !plan_amount) {
+            return res.status(400).json({ error: 'Missing required fields: client_id, service_type, carrier, plan_amount' });
+        }
+
+        console.log('Creating subscription:', { tenant_id: req.user.tenant_id, client_id, service_type, carrier, plan_amount, payment_due_day });
+
         const result = await pool.query(
             `INSERT INTO subscriptions 
              (tenant_id, client_id, service_type, carrier, plan_amount, payment_due_day, status)
@@ -45,9 +57,11 @@ const createSubscription = async (req: AuthRequest, res: Response) => {
             [req.user.tenant_id, client_id, service_type, carrier, plan_amount, payment_due_day]
         );
 
+        console.log('Subscription created successfully:', result.rows[0]);
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        res.status(500).json({ error: 'Could not create subscription' });
+        console.error('Error creating subscription:', err);
+        res.status(500).json({ error: 'Could not create subscription', details: err instanceof Error ? err.message : 'Unknown error' });
     }
 };
 

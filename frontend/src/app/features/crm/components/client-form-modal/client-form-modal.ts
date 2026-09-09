@@ -1,6 +1,6 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormArray, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule, X, LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
 import { forkJoin, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
@@ -31,13 +31,12 @@ export class ClientFormModal {
   @Output() close = new EventEmitter<void>();
 
   clientForm: FormGroup;
+  private clientService = inject(ClientService);
+  private subscriptionService = inject(SubscriptionService);
 
-  constructor(
-    private clientService: ClientService,
-    private subscriptionService: SubscriptionService
-  ) {
+  constructor() {
     this.clientForm = new FormGroup({
-      fullName: new FormControl(''),
+      fullName: new FormControl('', Validators.required),
       phone: new FormControl(''),
       email: new FormControl(''),
       zipCode: new FormControl(''),
@@ -76,59 +75,82 @@ export class ClientFormModal {
   // SUBMIT NEW CLIENT
   // ==========================================================
   onSubmit() {
-    if (this.clientForm.valid) {
-      const formValue = this.clientForm.value;
-      const newClient: Client = {
-        full_name: formValue.fullName,
-        phone_number: formValue.phone,
-        email: formValue.email,
-        zip_code: formValue.zipCode,
-        notes: formValue.notes,
-        status: formValue.status,
-        last_visit: new Date().toISOString(),
-      };
+    // Validate that at least fullName is filled
+    if (!this.clientForm.get('fullName')?.value?.trim()) {
+      alert('Please enter customer full name.');
+      return;
+    }
 
-      const subscriptions = this.subscriptionsArray.value
-        .map((subscription: any) => ({
-          service_type: subscription.service_type,
-          carrier: subscription.carrier,
-          plan_amount: Number(subscription.plan_amount),
-          payment_due_day: subscription.payment_due_day
-            ? Number(subscription.payment_due_day)
-            : undefined,
-        }))
-        .filter((subscription: Subscription) =>
-          subscription.carrier && !Number.isNaN(subscription.plan_amount)
-        );
+    const formValue = this.clientForm.value;
+    const newClient: Client = {
+      full_name: formValue.fullName,
+      phone_number: formValue.phone,
+      email: formValue.email,
+      zip_code: formValue.zipCode,
+      notes: formValue.notes,
+      status: formValue.status,
+      last_visit: new Date().toISOString(),
+    };
 
-      this.clientService.createClient(newClient).pipe(
-        switchMap((createdClient) => {
-          const requests = subscriptions.map((subscription: Subscription) =>
-            this.subscriptionService.createSubscription({
+    // Filter subscriptions to only include those with carrier and plan_amount
+    const subscriptions = this.subscriptionsArray.value
+      .map((subscription: any) => ({
+        service_type: subscription.service_type,
+        carrier: subscription.carrier?.trim() || '',
+        plan_amount: Number(subscription.plan_amount),
+        payment_due_day: subscription.payment_due_day ? Number(subscription.payment_due_day) : undefined,
+      }))
+      .filter((subscription: any) => subscription.carrier && !Number.isNaN(subscription.plan_amount) && subscription.plan_amount > 0);
+
+    // Create client first
+    this.clientService.createClient(newClient).pipe(
+      switchMap((createdClient) => {
+        console.log('Client created with ID:', createdClient.id);
+        
+        // If there are subscriptions to add, create them
+        if (subscriptions.length > 0) {
+          const requests = subscriptions.map((subscription: any) => {
+            console.log('Creating subscription:', { ...subscription, client_id: createdClient.id });
+            return this.subscriptionService.createSubscription({
               ...subscription,
               client_id: createdClient.id,
-            })
+            }).pipe(
+              // Use catchError to handle individual subscription failures
+              switchMap(
+                (subResponse) => {
+                  console.log('Subscription created:', subResponse);
+                  return of(subResponse);
+                }
+              )
+            );
+          });
+          return forkJoin(requests).pipe(
+            map(() => createdClient),
+            switchMap(() => of(createdClient))
           );
-
-          if (requests.length === 0) {
-            return of(createdClient);
-          }
-
-          return forkJoin(requests).pipe(map(() => createdClient));
-        })
-      ).subscribe({
-        next: (response) => {
-          console.log('Client created:', response);
-          alert('Client created successfully!');
-          this.close.emit();
-        },
-        error: (error) => {
-          console.error('Error creating client:', error);
-          alert('Failed to create client. Please try again.');
         }
-      });
-    } else {
-      alert('Please fill in all required fields.');
-    }
+
+        // No subscriptions to add
+        return of(createdClient);
+      })
+    ).subscribe({
+      next: (response) => {
+        console.log('Client and subscriptions created successfully:', response);
+        const subText = subscriptions.length > 0 ? ` with ${subscriptions.length} subscription(s)` : ' (no subscriptions)';
+        alert(`Client created successfully${subText}!`);
+        this.close.emit();
+      },
+      error: (error) => {
+        console.error('Error during client/subscription creation:', error);
+        console.error('Full error details:', JSON.stringify(error));
+        
+        // Show user-friendly error message
+        let errorMessage = 'Failed to create client or subscriptions.';
+        if (error.error?.error) {
+          errorMessage += ` Server: ${error.error.error}`;
+        }
+        alert(errorMessage);
+      }
+    });
   }
 }
