@@ -12,10 +12,10 @@ const getAllUsers = async (req: AuthRequest, res: Response) => {
     if (req.user.role === 'superadmin') {
       // Superadmins can see all users across all tenants
       result = await pool.query(
-        `SELECT u.id, u.tenant_id, u.username, u.email, u.role, u.full_name, u.created_at, t.name AS tenant_name
+        `SELECT u.id, u.tenant_id, u.username, u.email, u.role, u.full_name, u.created_at, t.store_name AS tenant_name
          FROM users u
          JOIN tenants t ON u.tenant_id = t.id
-         ORDER BY t.name, u.role, u.full_name`
+         ORDER BY t.store_name, u.role, u.full_name`
       );
     } else {
       // Admins see only their own tenant's users
