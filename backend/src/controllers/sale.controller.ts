@@ -34,16 +34,28 @@ const createSale = async (req: AuthRequest, res: Response) => {
 
         // Insert Items & Update Stock
         for (const item of items) {
+            // Include tenant_id and repair_ticket_id in the insert
             await client.query(
-                `INSERT INTO sale_items (sale_id, product_id, quantity, price_at_sale)
-                 VALUES ($1, $2, $3, $4)`,
-                [saleId, item.product_id, item.quantity, item.price]
+                `INSERT INTO sale_items (tenant_id, sale_id, product_id, repair_ticket_id, quantity, price_at_sale)
+                 VALUES ($1, $2, $3, $4, $5, $6)`,
+                [req.user.tenant_id, saleId, item.product_id || null, item.repair_ticket_id || null, item.quantity, item.price]
             );
 
-            await client.query(
-                `UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2 AND tenant_id = $3`,
-                [item.quantity, item.product_id, req.user.tenant_id]
-            );
+            // Only update product stock if this is a physical product (not a repair payment)
+            if (item.product_id) {
+                await client.query(
+                    `UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2 AND tenant_id = $3`,
+                    [item.quantity, item.product_id, req.user.tenant_id]
+                );
+            }
+            
+            // If this is a repair payment, update the amount_paid on the repair ticket
+            if (item.repair_ticket_id) {
+                await client.query(
+                    `UPDATE repair_tickets SET amount_paid = amount_paid + $1 WHERE id = $2 AND tenant_id = $3`,
+                    [item.price * item.quantity, item.repair_ticket_id, req.user.tenant_id]
+                );
+            }
         }
 
         // =========================================================
