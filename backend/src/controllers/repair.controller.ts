@@ -60,20 +60,22 @@ const getRepairsByClientId = async (req: AuthRequest, res: Response) => {
     }
 };
 
-// Create new repair ticket
+/// Create new repair ticket
 const createRepair = async (req: AuthRequest, res: Response) => {
     try {
         if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
-        const { client_id, device_model, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount } = req.body;
+        const { client_id, device_id, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount, amount_paid } = req.body;
 
-        // Validate required fields
-        if (!client_id || !device_model || !issue_description) {
+        // Validate required fields (Changed device_model to device_id)
+        if (!client_id || !device_id || !issue_description) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
         const result = await pool.query(
-            'INSERT INTO repair_tickets (tenant_id, client_id, device_model, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
-            [req.user.tenant_id, client_id, device_model, issue_description, status || 'Intake', estimated_cost || 0, parts_cost || 0, labor_cost || 0, charge_amount || 0]
+            `INSERT INTO repair_tickets 
+            (tenant_id, client_id, device_id, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount, amount_paid) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+            [req.user.tenant_id, client_id, device_id, issue_description, status || 'Intake', estimated_cost || 0, parts_cost || 0, labor_cost || 0, charge_amount || 0, amount_paid || 0]
         );
 
         res.status(201).json(result.rows[0]);
@@ -88,18 +90,20 @@ const updateRepair = async (req: AuthRequest, res: Response) => {
     try {
         if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
         const { id } = req.params;
-        const { device_model, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount } = req.body;
+        const { device_id, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount, amount_paid } = req.body;
 
         const result = await pool.query(
-            `UPDATE repair_tickets SET device_model = COALESCE($1, device_model), 
+            `UPDATE repair_tickets SET 
+                device_id = COALESCE($1, device_id), 
                 issue_description = COALESCE($2, issue_description), 
                 status = COALESCE($3, status), 
                 estimated_cost = COALESCE($4, estimated_cost),
                 parts_cost = COALESCE($5, parts_cost),
                 labor_cost = COALESCE($6, labor_cost),
-                charge_amount = COALESCE($7, charge_amount)
-            WHERE id = $8 AND tenant_id = $9 RETURNING *`,
-            [device_model, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount, id, req.user.tenant_id]
+                charge_amount = COALESCE($7, charge_amount),
+                amount_paid = COALESCE($8, amount_paid)
+            WHERE id = $9 AND tenant_id = $10 RETURNING *`,
+            [device_id, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount, amount_paid, id, req.user.tenant_id]
         );
 
         if (result.rows.length === 0) {
