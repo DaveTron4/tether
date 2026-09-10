@@ -60,7 +60,7 @@ const updateClient = async (req: AuthRequest, res: Response) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
     const result = await pool.query(
       'UPDATE clients SET full_name = $1, phone_number = $2, email = $3, zip_code = $4, status = $5, notes = $6, last_visit = $7 WHERE id = $8 AND tenant_id = $9 RETURNING *',
-      [full_name, phone_number, email, zip_code, status || 'Active', notes || '', last_visit || new Date().toISOString(), id, req.user.tenant_id]
+      [full_name, phone_number, email, zip_code, status || 'Active', notes ?? '', last_visit || new Date().toISOString(), id, req.user.tenant_id]
     );
     
     if (result.rows.length === 0) {
@@ -98,21 +98,21 @@ const getClientSummary = async (req: AuthRequest, res: Response) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
     const { id } = req.params;
 
-    // Single optimized query with proper JOINs (not subqueries)
     const result = await pool.query(
       `
-      SELECT
-        COALESCE(clv.lifetime_value, 0)::numeric as lifetime_value,
-        COALESCE(SUM(CASE WHEN s.status != 'Paid' THEN s.plan_amount ELSE 0 END), 0)::numeric +
-        COALESCE(SUM(CASE WHEN rt.status NOT IN ('Done', 'Picked Up') THEN rt.charge_amount ELSE 0 END), 0)::numeric as balance_due,
-        COUNT(DISTINCT CASE WHEN s.is_active = TRUE THEN s.id END)::integer as active_subscriptions,
-        COUNT(DISTINCT rt.id)::integer as total_repairs
+      SELECT 
+        c.id,
+        COALESCE(clv.lifetime_value, 0)::numeric AS lifetime_value,
+        COALESCE(cbd.total_balance_due, 0)::numeric AS balance_due,
+        
+        -- Use subqueries for counts to avoid duplicate row multiplication
+        (SELECT COUNT(*) FROM subscriptions WHERE client_id = c.id AND is_active = TRUE) AS active_subscriptions,
+        (SELECT COUNT(*) FROM repair_tickets WHERE client_id = c.id) AS total_repairs
+        
       FROM clients c
-      LEFT JOIN client_lifetime_value clv ON c.id = clv.client_id AND clv.tenant_id = c.tenant_id
-      LEFT JOIN subscriptions s ON c.id = s.client_id AND s.tenant_id = $2
-      LEFT JOIN repair_tickets rt ON c.id = rt.client_id AND rt.tenant_id = $2
+      LEFT JOIN client_lifetime_value clv ON c.id = clv.client_id AND c.tenant_id = clv.tenant_id
+      LEFT JOIN client_balance_due cbd ON c.id = cbd.client_id AND c.tenant_id = cbd.tenant_id
       WHERE c.id = $1 AND c.tenant_id = $2
-      GROUP BY c.id, clv.lifetime_value
       `,
       [id, req.user.tenant_id]
     );
