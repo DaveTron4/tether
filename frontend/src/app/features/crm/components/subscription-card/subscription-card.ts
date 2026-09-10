@@ -1,6 +1,6 @@
-import { Component, Input, computed } from '@angular/core';
+import { Component, Input, computed, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Phone, Wifi, Calendar, DollarSign, CheckCircle, AlertCircle, Clock, LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
+import { LucideAngularModule, Phone, Wifi, Calendar, DollarSign, CheckCircle, AlertCircle, Clock, Edit2, LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
 import { Subscription } from '../../../../shared/models/subscription.interface';
 
 @Component({
@@ -12,12 +12,13 @@ import { Subscription } from '../../../../shared/models/subscription.interface';
     {
       provide: LUCIDE_ICONS,
       multi: true,
-      useValue: new LucideIconProvider({ Phone, Wifi, Calendar, DollarSign, CheckCircle, AlertCircle, Clock })
+      useValue: new LucideIconProvider({ Phone, Wifi, Calendar, DollarSign, CheckCircle, AlertCircle, Clock, Edit2 })
     }
   ]
 })
 export class SubscriptionCard {
   @Input() subscription: Subscription | null = null;
+  @Output() edit = new EventEmitter<Subscription>();
 
   statusColor = computed(() => {
     if (!this.subscription) return 'gray';

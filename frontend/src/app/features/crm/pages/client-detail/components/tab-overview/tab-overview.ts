@@ -14,10 +14,11 @@ import { ClientService } from '../../../../../../core/services/client';
 
 // Components
 import { SubscriptionCard } from '../../../../components/subscription-card/subscription-card';
+import { SubscriptionFormModal } from '../../../../../../shared/components/subscriptions-form-modal/subscription-form-modal/subscription-form-modal';
 
 @Component({
   selector: 'app-tab-overview',
-  imports: [CommonModule, SubscriptionCard, LucideAngularModule],
+  imports: [CommonModule, SubscriptionCard, SubscriptionFormModal, LucideAngularModule],
   templateUrl: './tab-overview.html',
   styleUrl: './tab-overview.css',
   providers: [
@@ -39,6 +40,11 @@ export class TabOverview implements OnInit {
   summary = signal<ClientSummary | null>(null);
   loading = signal(false);
   error = signal<string | null>(null);
+
+  // Modal state
+  showCreateModal = signal(false);
+  showEditModal = signal(false);
+  selectedSubscription = signal<Subscription | undefined>(undefined);
 
   ngOnInit() {
     if (this.client?.id) {
@@ -91,5 +97,29 @@ export class TabOverview implements OnInit {
 
   get unpaidSubscriptionsCount(): number {
     return this.subscriptions().filter(s => s.status === 'Unpaid' || s.status === 'Overdue').length;
+  }
+
+  onOpenCreateModal() {
+    console.log('Opening create modal, current state:', this.showCreateModal());
+    this.showCreateModal.set(true);
+    console.log('After set, state:', this.showCreateModal());
+  }
+
+  onOpenEditModal(subscription: Subscription) {
+    console.log('Opening edit modal for subscription:', subscription);
+    this.selectedSubscription.set(subscription);
+    this.showEditModal.set(true);
+    console.log('After set, edit state:', this.showEditModal());
+  }
+
+  onCloseModal() {
+    this.showCreateModal.set(false);
+    this.showEditModal.set(false);
+    this.selectedSubscription.set(undefined);
+  }
+
+  onSubscriptionSubmitted(subscription: Subscription) {
+    this.onCloseModal();
+    this.loadData();
   }
 }

@@ -21,4 +21,10 @@ export class SubscriptionService {
     const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
     return this.http.post<Subscription>(this.apiUrl, subscription, { headers });
   }
+
+  updateSubscription(id: number, subscription: Partial<Subscription>) {
+    const token = localStorage.getItem('tether_token');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.put<Subscription>(`${this.apiUrl}/${id}`, subscription, { headers });
+  }
 }

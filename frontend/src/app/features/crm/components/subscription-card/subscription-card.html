@@ -11,20 +11,31 @@
       </div>
     </div>
 
-    <!-- Status Badge -->
-    <div [class.bg-green-50]="statusColor() === 'green'" 
-         [class.bg-red-50]="statusColor() === 'red'"
-         [class.bg-orange-50]="statusColor() === 'orange'"
-         class="px-3 py-1 rounded-full flex items-center gap-2">
-      <lucide-icon [name]="statusIcon()" 
-                   [class.text-green-600]="statusColor() === 'green'"
-                   [class.text-red-600]="statusColor() === 'red'"
-                   [class.text-orange-600]="statusColor() === 'orange'"
-                   class="w-4 h-4"></lucide-icon>
-      <span [class.text-green-700]="statusColor() === 'green'"
-            [class.text-red-700]="statusColor() === 'red'"
-            [class.text-orange-700]="statusColor() === 'orange'"
-            class="text-xs font-semibold">{{ subscription.status }}</span>
+    <!-- Status Badge + Edit Button -->
+    <div class="flex items-center gap-2">
+      <!-- Status Badge -->
+      <div [class.bg-green-50]="statusColor() === 'green'" 
+           [class.bg-red-50]="statusColor() === 'red'"
+           [class.bg-orange-50]="statusColor() === 'orange'"
+           class="px-3 py-1 rounded-full flex items-center gap-2">
+        <lucide-icon [name]="statusIcon()" 
+                     [class.text-green-600]="statusColor() === 'green'"
+                     [class.text-red-600]="statusColor() === 'red'"
+                     [class.text-orange-600]="statusColor() === 'orange'"
+                     class="w-4 h-4"></lucide-icon>
+        <span [class.text-green-700]="statusColor() === 'green'"
+              [class.text-red-700]="statusColor() === 'red'"
+              [class.text-orange-700]="statusColor() === 'orange'"
+              class="text-xs font-semibold">{{ subscription.status }}</span>
+      </div>
+
+      <!-- Edit Button -->
+      <button 
+        (click)="edit.emit(subscription)"
+        class="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 hover:text-gray-900"
+        title="Edit subscription">
+        <lucide-icon name="edit-2" class="w-4 h-4"></lucide-icon>
+      </button>
     </div>
   </div>
 

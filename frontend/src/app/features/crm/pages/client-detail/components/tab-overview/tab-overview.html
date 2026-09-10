@@ -46,7 +46,7 @@
             <lucide-icon name="refresh-cw" class="w-4 h-4"></lucide-icon>
             Refresh
           </button>
-          <button class="px-3 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-2">
+          <button (click)="onOpenCreateModal()" class="px-3 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-2">
             <lucide-icon name="plus" class="w-4 h-4"></lucide-icon>
             Add Subscription
           </button>
@@ -55,16 +55,38 @@
 
       <!-- Subscriptions List -->
       <div *ngIf="subscriptions().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <app-subscription-card *ngFor="let sub of subscriptions()" [subscription]="sub"></app-subscription-card>
+        <app-subscription-card 
+          *ngFor="let sub of subscriptions()" 
+          [subscription]="sub"
+          (edit)="onOpenEditModal($event)">
+        </app-subscription-card>
       </div>
 
       <!-- Empty State -->
       <div *ngIf="subscriptions().length === 0" class="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
         <p class="text-gray-600 mb-4">No subscriptions found for this customer</p>
-        <button class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors">
+        <button (click)="onOpenCreateModal()" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors">
           Create First Subscription
         </button>
       </div>
     </div>
   </ng-container>
 </div>
+
+<!-- Create Subscription Modal -->
+<app-subscription-form-modal 
+  *ngIf="showCreateModal()"
+  mode="create"
+  [clientId]="client?.id"
+  (close)="onCloseModal()"
+  (submitted)="onSubscriptionSubmitted($event)">
+</app-subscription-form-modal>
+
+<!-- Edit Subscription Modal -->
+<app-subscription-form-modal 
+  *ngIf="showEditModal()"
+  mode="edit"
+  [subscription]="selectedSubscription()"
+  (close)="onCloseModal()"
+  (submitted)="onSubscriptionSubmitted($event)">
+</app-subscription-form-modal>
