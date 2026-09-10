@@ -1,5 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- ========Tenants Table=========
 CREATE TABLE IF NOT EXISTS tenants (
     -- Each store/tenant in the system
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -118,7 +119,7 @@ CREATE TABLE IF NOT EXISTS products (
 
     -- IDENTIFICATION
     name VARCHAR(255) NOT NULL,
-    barcode VARCHAR(100) UNIQUE NOT NULL,
+    barcode VARCHAR(100) NOT NULL,
     
     -- CATEGORIZATION
     category VARCHAR(50) NOT NULL,
@@ -137,6 +138,9 @@ CREATE TABLE IF NOT EXISTS products (
     properties JSONB,
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+    -- CONSTRAINTS
+    UNIQUE(tenant_id, barcode)  -- Each tenant can have unique barcodes for their products
 );
 
 
@@ -161,14 +165,32 @@ CREATE TABLE IF NOT EXISTS sales (
 CREATE TABLE IF NOT EXISTS sale_items (
     -- Line items for each sale, linking products to sales with quantity and price at time of sale
     id SERIAL PRIMARY KEY,
+    tenant_id UUID NOT NULL REFERENCES tenants(id), -- The tenant/store this sale belongs to
 
     -- LINKS
-    sale_id INTEGER REFERENCES sales(id) ON DELETE CASCADE,
-    product_id INTEGER REFERENCES products(id),
+    sale_id INTEGER REFERENCES sales(id) ON DELETE CASCADE, -- The sale this item belongs to
+    product_id INTEGER REFERENCES products(id), -- The specific product sold
+    repair_ticket_id INTEGER REFERENCES repair_tickets(id), -- Optional link to a repair ticket if the sale is for a repair part
     
     -- DETAILS
     quantity INTEGER NOT NULL,
     price_at_sale DECIMAL(10, 2) NOT NULL
+);
+
+-- ========Client Devices Table=========
+CREATE TABLE IF NOT EXISTS client_devices (
+    id SERIAL PRIMARY KEY,
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    client_id INTEGER NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+    
+    device_type VARCHAR(50), -- 'Phone', 'Tablet', 'Laptop'
+    manufacturer VARCHAR(50), -- 'Apple', 'Samsung'
+    model VARCHAR(100) NOT NULL, 
+    imei_serial VARCHAR(100),
+    color VARCHAR(50),
+    device_passcode VARCHAR(50), -- Critical for technicians!
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- =========Repair Tickets Table=========
@@ -179,20 +201,33 @@ CREATE TABLE IF NOT EXISTS repair_tickets (
     client_id INTEGER REFERENCES clients(id) NOT NULL,
     
     -- REPAIR DETAILS
-    device_model VARCHAR(100),            -- "Samsung S21"
+    device_id INTEGER REFERENCES client_devices(id), -- The specific device being repaired
     issue_description TEXT,               -- "Screen cracked, touch not working"
     status VARCHAR(20) DEFAULT 'Intake',  -- 'Intake', 'In Progress', 'Done', 'Picked Up'
     
     -- COST ESTIMATES & CHARGES
-    estimated_cost DECIMAL(10, 2),
-    parts_cost DECIMAL(10, 2) DEFAULT 0,
-    labor_cost DECIMAL(10, 2) DEFAULT 0,
-    charge_amount DECIMAL(10, 2) DEFAULT 0,
+    estimated_cost DECIMAL(10, 2), -- Estimated cost provided to the client before repair
+    parts_cost DECIMAL(10, 2) DEFAULT 0, -- Total cost of parts used in the repair
+    labor_cost DECIMAL(10, 2) DEFAULT 0, -- Total labor cost for the repair
+    charge_amount DECIMAL(10, 2) DEFAULT 0, -- Total amount charged to the client for this repair ticket
+    amount_paid DECIMAL(10,2) DEFAULT 0, -- Total amount paid by the client for this repair ticket
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP
 );
 
+-- ========Repair Ticket Parts Table=========
+CREATE TABLE IF NOT EXISTS repair_ticket_parts (
+    id SERIAL PRIMARY KEY,
+    tenant_id UUID NOT NULL REFERENCES tenants(id),
+    ticket_id INTEGER NOT NULL REFERENCES repair_tickets(id) ON DELETE CASCADE,
+    product_id INTEGER NOT NULL REFERENCES products(id),
+    
+    quantity INTEGER DEFAULT 1,
+    price_charged DECIMAL(10, 2) NOT NULL -- Locks in the price at the time of repair
+);
+
+-- ========Client Lifetime Value View=========
 DROP VIEW IF EXISTS client_lifetime_value;
 CREATE OR REPLACE VIEW client_lifetime_value AS
 SELECT
@@ -221,3 +256,35 @@ LEFT JOIN (
     JOIN subscriptions s ON s.id = ph.subscription_id AND ph.tenant_id = s.tenant_id
     GROUP BY s.client_id, s.tenant_id
 ) payment_totals ON payment_totals.client_id = c.id AND payment_totals.tenant_id = c.tenant_id;
+
+-- ========Client Balance Due View=========
+DROP VIEW IF EXISTS client_balance_due;
+CREATE OR REPLACE VIEW client_balance_due AS
+SELECT 
+    c.id AS client_id,
+    c.tenant_id,
+    
+    -- Unpaid Repair Charges (Total Charge - Amount Paid)
+    COALESCE(repairs.unpaid_repairs, 0) AS repair_balance,
+    
+    -- Overdue Subscriptions
+    COALESCE(subs.overdue_subs, 0) AS subscription_balance,
+    
+    -- Total Owed Now
+    COALESCE(repairs.unpaid_repairs, 0) + COALESCE(subs.overdue_subs, 0) AS total_balance_due
+
+FROM clients c
+LEFT JOIN (
+    -- Calculate unpaid repair balances
+    SELECT client_id, tenant_id, SUM(charge_amount - amount_paid) AS unpaid_repairs
+    FROM repair_tickets
+    WHERE status != 'Paid' -- Assuming you add a 'Paid' status or check amount_paid < charge_amount
+    GROUP BY client_id, tenant_id
+) repairs ON repairs.client_id = c.id AND repairs.tenant_id = c.tenant_id
+LEFT JOIN (
+    -- Calculate overdue subscriptions
+    SELECT client_id, tenant_id, SUM(plan_amount) AS overdue_subs
+    FROM subscriptions
+    WHERE status = 'Overdue'
+    GROUP BY client_id, tenant_id
+) subs ON subs.client_id = c.id AND subs.tenant_id = c.tenant_id;

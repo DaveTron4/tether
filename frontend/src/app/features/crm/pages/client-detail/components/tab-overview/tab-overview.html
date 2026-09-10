@@ -13,25 +13,25 @@
     <!-- Payment Summary Section -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <!-- Balance Due Card -->
-      <div class="p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-lg border border-red-200">
+      <div class="p-4 bg-linear-to-br from-red-50 to-red-100 rounded-lg border border-red-200">
         <p class="text-xs text-red-600 uppercase tracking-wide font-semibold mb-2">Balance Due</p>
         <p class="text-3xl font-bold text-red-700">${{ balanceDue.toFixed(2) }}</p>
       </div>
 
       <!-- Active Subscriptions Card -->
-      <div class="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+      <div class="p-4 bg-linear-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
         <p class="text-xs text-blue-600 uppercase tracking-wide font-semibold mb-2">Active Plans</p>
         <p class="text-3xl font-bold text-blue-700">{{ activeSubscriptionsCount }}</p>
       </div>
 
       <!-- Paid Subscriptions Card -->
-      <div class="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
+      <div class="p-4 bg-linear-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
         <p class="text-xs text-green-600 uppercase tracking-wide font-semibold mb-2">Paid Plans</p>
         <p class="text-3xl font-bold text-green-700">{{ paidSubscriptionsCount }}</p>
       </div>
 
       <!-- Unpaid Subscriptions Card -->
-      <div class="p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border border-orange-200">
+      <div class="p-4 bg-linear-to-br from-orange-50 to-orange-100 rounded-lg border border-orange-200">
         <p class="text-xs text-orange-600 uppercase tracking-wide font-semibold mb-2">Unpaid Plans</p>
         <p class="text-3xl font-bold text-orange-700">{{ unpaidSubscriptionsCount }}</p>
       </div>
