@@ -486,6 +486,35 @@ const createClientLtvView = async () => {
     console.log('🏗️ Client lifetime value view created');
 };
 
+const createClientBalanceDueView = async () => {
+    const query = `
+    DROP VIEW IF EXISTS client_balance_due;
+    CREATE VIEW client_balance_due AS
+    SELECT
+        c.id AS client_id,
+        c.tenant_id,
+        COALESCE(repairs.unpaid_repairs, 0) AS repair_balance,
+        COALESCE(subs.overdue_subs, 0) AS subscription_balance,
+        COALESCE(repairs.unpaid_repairs, 0)
+            + COALESCE(subs.overdue_subs, 0) AS total_balance_due
+    FROM clients c
+    LEFT JOIN (
+        SELECT client_id, tenant_id, SUM(charge_amount) AS unpaid_repairs
+        FROM repair_tickets
+        WHERE status != 'Paid'
+        GROUP BY client_id, tenant_id
+    ) repairs ON repairs.client_id = c.id AND repairs.tenant_id = c.tenant_id
+    LEFT JOIN (
+        SELECT client_id, tenant_id, SUM(plan_amount) AS overdue_subs
+        FROM subscriptions
+        WHERE status = 'Overdue'
+        GROUP BY client_id, tenant_id
+    ) subs ON subs.client_id = c.id AND subs.tenant_id = c.tenant_id;
+    `;
+    await pool.query(query);
+    console.log('🏗️ Client balance due view created');
+};
+
 const seedRepairTicketsTable = async () => {
     const tenantId = await getTenantId();
     const clientRes = await pool.query(
@@ -526,6 +555,7 @@ const reset = async () => {
         await createPaymentHistoryTable(); // Depends on Subscriptions
         await createRepairTicketsTable();  // Depends on Clients
         await createClientLtvView();
+        await createClientBalanceDueView();
 
         console.log("--------------------------------");
 

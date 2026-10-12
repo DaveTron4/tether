@@ -1,67 +1,67 @@
 {
-  "hash": "82182c52",
+  "hash": "199a2a95",
   "configHash": "0f1a35bf",
-  "lockfileHash": "9c1f9834",
-  "browserHash": "fe663271",
+  "lockfileHash": "03dc9c28",
+  "browserHash": "cabe9257",
   "optimized": {
     "@angular/common": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
       "file": "@angular_common.js",
-      "fileHash": "d7dd2c03",
+      "fileHash": "b60f983c",
       "needsInterop": false
     },
     "@angular/common/http": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
       "file": "@angular_common_http.js",
-      "fileHash": "1fe25895",
+      "fileHash": "90af1379",
       "needsInterop": false
     },
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "60e0764d",
+      "fileHash": "be9c9c59",
       "needsInterop": false
     },
     "@angular/core/primitives/di": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/primitives-di.mjs",
       "file": "@angular_core_primitives_di.js",
-      "fileHash": "3c1ce437",
+      "fileHash": "e03a9e8e",
       "needsInterop": false
     },
     "@angular/forms": {
       "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
       "file": "@angular_forms.js",
-      "fileHash": "9418a0d7",
+      "fileHash": "e940817c",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "40b73a11",
+      "fileHash": "f8dc2726",
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
-      "fileHash": "52bf898c",
+      "fileHash": "808d2907",
       "needsInterop": false
     },
     "lucide-angular": {
       "src": "../../../../../../node_modules/lucide-angular/fesm2020/lucide-angular.mjs",
       "file": "lucide-angular.js",
-      "fileHash": "64d42931",
+      "fileHash": "26b7f7d8",
       "needsInterop": false
     },
     "rxjs": {
       "src": "../../../../../../node_modules/rxjs/dist/esm5/index.js",
       "file": "rxjs.js",
-      "fileHash": "e2bfe9bd",
+      "fileHash": "ce45deaa",
       "needsInterop": false
     },
     "rxjs/operators": {
       "src": "../../../../../../node_modules/rxjs/dist/esm5/operators/index.js",
       "file": "rxjs_operators.js",
-      "fileHash": "53bfa180",
+      "fileHash": "72c06ce0",
       "needsInterop": false
     }
   },
@@ -81,14 +81,14 @@
     "chunk-WJXWR6WL": {
       "file": "chunk-WJXWR6WL.js"
     },
+    "chunk-JRFR6BLO": {
+      "file": "chunk-JRFR6BLO.js"
+    },
     "chunk-2S2P4GUU": {
       "file": "chunk-2S2P4GUU.js"
     },
     "chunk-HWYXSU2G": {
       "file": "chunk-HWYXSU2G.js"
-    },
-    "chunk-JRFR6BLO": {
-      "file": "chunk-JRFR6BLO.js"
     },
     "chunk-MARUHEWW": {
       "file": "chunk-MARUHEWW.js"
