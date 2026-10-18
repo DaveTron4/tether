@@ -179,6 +179,25 @@ const seedClientsTable = async () => {
     console.log("🌱 Clients seeded");
 };
 
+const createClientDevicesTable = async () => {
+    const query = `
+    DROP TABLE IF EXISTS client_devices CASCADE;
+    CREATE TABLE client_devices (
+        id SERIAL PRIMARY KEY,
+        tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+        client_id INTEGER NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+        device_type VARCHAR(50),
+        manufacturer VARCHAR(50),
+        model VARCHAR(100) NOT NULL,
+        imei_serial VARCHAR(100),
+        color VARCHAR(50),
+        device_passcode VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );`;
+    await pool.query(query);
+    console.log("🏗️ Client devices table created");
+};
+
 // ==========================================
 // 3. SUBSCRIPTIONS (Phone & WiFi Plans)
 // ==========================================
@@ -437,13 +456,14 @@ const createRepairTicketsTable = async () => {
         id SERIAL PRIMARY KEY,
         tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
         client_id INTEGER REFERENCES clients(id) NOT NULL,
-        device_model VARCHAR(100),
+        device_id INTEGER REFERENCES client_devices(id),
         issue_description TEXT,
         status VARCHAR(20) DEFAULT 'Intake',
         estimated_cost DECIMAL(10, 2),
         parts_cost DECIMAL(10, 2) DEFAULT 0,
         labor_cost DECIMAL(10, 2) DEFAULT 0,
         charge_amount DECIMAL(10, 2) DEFAULT 0,
+        amount_paid DECIMAL(10, 2) DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         completed_at TIMESTAMP
     );`;
@@ -529,9 +549,9 @@ const seedRepairTicketsTable = async () => {
 
     await pool.query(
         `INSERT INTO repair_tickets 
-        (tenant_id, client_id, device_model, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [tenantId, clientId, 'iPhone 12', 'Screen cracked, touch unresponsive', 'In Progress', 149.00, 45.00, 30.00, 149.00]
+        (tenant_id, client_id, issue_description, status, estimated_cost, parts_cost, labor_cost, charge_amount)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [tenantId, clientId, 'Screen cracked, touch unresponsive', 'In Progress', 149.00, 45.00, 30.00, 149.00]
     );
 
     console.log('🌱 Repair tickets seeded');
@@ -549,6 +569,7 @@ const reset = async () => {
         await createTenantsTable();
         await createUsersTable();
         await createClientsTable();
+        await createClientDevicesTable();
         await createSubscriptionsTable(); // Depends on Clients
         await createProductsTable();
         await createSalesTables();      // Depends on Users, Clients

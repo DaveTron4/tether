@@ -1,4 +1,12 @@
-import { Component, Input, inject, OnInit, signal, ChangeDetectorRef } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Plus, RefreshCw, LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
 import { forkJoin } from 'rxjs';
@@ -29,7 +37,7 @@ import { SubscriptionFormModal } from '../../../../../../shared/components/subsc
     }
   ]
 })
-export class TabOverview implements OnInit {
+export class TabOverview implements OnChanges {
   @Input() client: Client | null = null;
 
   private subscriptionService = inject(SubscriptionService);
@@ -46,8 +54,8 @@ export class TabOverview implements OnInit {
   showEditModal = signal(false);
   selectedSubscription = signal<Subscription | undefined>(undefined);
 
-  ngOnInit() {
-    if (this.client?.id) {
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['client'] && this.client?.id) {
       this.loadData();
     }
   }

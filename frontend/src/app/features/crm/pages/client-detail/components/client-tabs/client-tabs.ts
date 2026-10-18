@@ -18,7 +18,7 @@ import { TabFinancials } from '../tab-financials/tab-financials';
 })
 export class ClientTabs {
   @Input() client: Client | null = null;
-  activeTab = signal('overview');
+  activeTab = signal('subscriptions');
 
   setActiveTab(tab: string) {
     this.activeTab.set(tab);
