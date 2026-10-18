@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth';
+import { PlanService } from '../../../core/services/plan';
 
 import  { LucideAngularModule, Home, Users, Box, Wrench, UserPlus, LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
 @Component({
@@ -23,11 +24,16 @@ import  { LucideAngularModule, Home, Users, Box, Wrench, UserPlus, LUCIDE_ICONS,
 })
 export class Sidebar {
   private authService = inject(AuthService);
+  private planService = inject(PlanService);
 
   isAdminOrAbove = computed(() => {
     const user = this.authService.currentUser();
     return user?.role === 'admin' || user?.role === 'superadmin';
   });
+
+  canAccessRepairs = computed(() =>
+    this.planService.loaded() && this.planService.canAccess('repairs')
+  );
 
   expanded = false;
   private hoverTimer: any = null;

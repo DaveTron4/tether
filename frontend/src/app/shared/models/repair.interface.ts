@@ -7,6 +7,7 @@ export interface RepairTicket {
   client_id: number;
   client_name?: string;
 
+  device_id: number;
   device_model?: string;
   issue_description?: string;
 
@@ -16,6 +17,7 @@ export interface RepairTicket {
   parts_cost?: number;
   labor_cost?: number;
   charge_amount?: number;
+  amount_paid?: number;
 
   created_at?: string;
   completed_at?: string;

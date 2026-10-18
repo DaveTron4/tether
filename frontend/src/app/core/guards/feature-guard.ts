@@ -1,5 +1,7 @@
 import { inject } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { type CanActivateFn, Router } from '@angular/router';
+import { filter, map, take } from 'rxjs';
 import { PlanService } from '../services/plan';
 
 /**
@@ -11,12 +13,20 @@ export const featureGuard = (feature: string): CanActivateFn => {
     const planService = inject(PlanService);
     const router = inject(Router);
 
-    if (planService.canAccess(feature)) {
-      return true;
+    if (planService.loaded()) {
+      return planService.canAccess(feature);
     }
 
-    // Redirect to an upgrade page or back to inventory
-    router.navigate(['/inventory']);
-    return false;
+    return toObservable(planService.loaded).pipe(
+      filter((loaded) => loaded),
+      take(1),
+      map(() => {
+        if (planService.canAccess(feature)) {
+          return true;
+        }
+
+        return router.createUrlTree(['/inventory']);
+      })
+    );
   };
 };

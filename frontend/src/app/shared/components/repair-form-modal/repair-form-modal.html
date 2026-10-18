@@ -1,0 +1,64 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
+  <div class="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
+    <div class="mb-6 flex items-center justify-between">
+      <h2 class="text-xl font-semibold text-gray-900">New Repair Ticket</h2>
+      <button type="button" aria-label="Close" (click)="close.emit()" class="text-2xl text-gray-500 hover:text-gray-900">&times;</button>
+    </div>
+
+    <div *ngIf="error" class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ error }}</div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700">Client *</label>
+          <select formControlName="client_id" (change)="onClientChange()" class="w-full rounded-lg border border-gray-300 px-3 py-2" [disabled]="!!clientId">
+            <option [ngValue]="null">Select a client</option>
+            <option *ngFor="let client of clients" [ngValue]="client.id">{{ client.full_name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700">Device *</label>
+          <select formControlName="device_id" class="w-full rounded-lg border border-gray-300 px-3 py-2">
+            <option [ngValue]="null">Select a device</option>
+            <option *ngFor="let device of devices" [ngValue]="device.id">
+              {{ device.manufacturer }} {{ device.model }} ({{ device.device_type }})
+            </option>
+          </select>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="mb-1 block text-sm font-medium text-gray-700">Issue Description *</label>
+          <textarea formControlName="issue_description" rows="3" class="w-full rounded-lg border border-gray-300 px-3 py-2" placeholder="Describe the customer-reported issue"></textarea>
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700">Status</label>
+          <select formControlName="status" class="w-full rounded-lg border border-gray-300 px-3 py-2">
+            <option value="Intake">Intake</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Done">Done</option>
+            <option value="Picked Up">Picked Up</option>
+          </select>
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700">Estimated Cost</label>
+          <input formControlName="estimated_cost" type="number" min="0" step="0.01" class="w-full rounded-lg border border-gray-300 px-3 py-2" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700">Parts Cost</label>
+          <input formControlName="parts_cost" type="number" min="0" step="0.01" class="w-full rounded-lg border border-gray-300 px-3 py-2" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700">Labor Cost</label>
+          <input formControlName="labor_cost" type="number" min="0" step="0.01" class="w-full rounded-lg border border-gray-300 px-3 py-2" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700">Charge Amount</label>
+          <input formControlName="charge_amount" type="number" min="0" step="0.01" class="w-full rounded-lg border border-gray-300 px-3 py-2" />
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 border-t border-gray-200 pt-5">
+        <button type="button" (click)="close.emit()" class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
+        <button type="submit" [disabled]="loading" class="rounded-lg bg-primary px-4 py-2 text-sm text-white hover:bg-primary-dark disabled:opacity-50">{{ loading ? 'Creating...' : 'Create Repair' }}</button>
+      </div>
+    </form>
+  </div>
+</div>

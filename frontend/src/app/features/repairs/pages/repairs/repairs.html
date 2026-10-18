@@ -1,1 +1,84 @@
-<p>repairs works!</p>
+<div class="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Repairs</h1>
+      <p class="text-sm text-gray-500">Track active shop jobs by status.</p>
+    </div>
+    <div class="flex gap-2">
+      <button type="button" (click)="refresh()" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Refresh</button>
+      <button type="button" (click)="openCreateModal()" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark">+ New Repair</button>
+    </div>
+  </div>
+
+  <div *ngIf="error()" class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">{{ error() }}</div>
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+      <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Total Tickets</p>
+      <p class="mt-2 text-3xl font-bold text-gray-900">{{ totalRepairs }}</p>
+    </div>
+    <div class="rounded-lg border border-blue-200 bg-blue-50 p-4 shadow-sm">
+      <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">Active Jobs</p>
+      <p class="mt-2 text-3xl font-bold text-blue-700">{{ activeRepairs }}</p>
+    </div>
+    <div class="rounded-lg border border-green-200 bg-green-50 p-4 shadow-sm">
+      <p class="text-xs font-semibold uppercase tracking-wide text-green-600">Completed</p>
+      <p class="mt-2 text-3xl font-bold text-green-700">{{ completedRepairs }}</p>
+    </div>
+    <div class="rounded-lg border border-purple-200 bg-purple-50 p-4 shadow-sm">
+      <p class="text-xs font-semibold uppercase tracking-wide text-purple-600">Estimated Value</p>
+      <p class="mt-2 text-3xl font-bold text-purple-700">${{ estimatedValue.toFixed(2) }}</p>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:flex-row">
+    <input #search type="search" placeholder="Search client, device, or issue..." (input)="setSearchTerm(search.value)" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm md:flex-1" />
+    <select #status (change)="setStatusFilter(status.value)" class="rounded-lg border border-gray-300 px-3 py-2 text-sm">
+      <option *ngFor="let option of filterStatuses" [value]="option">{{ option === 'All' ? 'All statuses' : option }}</option>
+    </select>
+    <select #client (change)="setClientFilter(client.value)" class="rounded-lg border border-gray-300 px-3 py-2 text-sm">
+      <option value="All">All clients</option>
+      <option *ngFor="let item of clients" [value]="item.id">{{ item.full_name }}</option>
+    </select>
+  </div>
+
+  <div *ngIf="loading()" class="py-8 text-center text-gray-500">Loading repair tickets...</div>
+  <div *ngIf="!loading()" class="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-gray-200 text-left text-sm">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-3 font-semibold text-gray-600">Ticket</th>
+          <th class="px-4 py-3 font-semibold text-gray-600">Client</th>
+          <th class="px-4 py-3 font-semibold text-gray-600">Device</th>
+          <th class="px-4 py-3 font-semibold text-gray-600">Issue</th>
+          <th class="px-4 py-3 font-semibold text-gray-600">Status</th>
+          <th class="px-4 py-3 font-semibold text-gray-600">Estimate</th>
+          <th class="px-4 py-3 font-semibold text-gray-600">Created</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <tr *ngFor="let repair of filteredRepairs()" class="hover:bg-gray-50">
+          <td class="whitespace-nowrap px-4 py-3 font-medium text-gray-900">#{{ repair.id }}</td>
+          <td class="whitespace-nowrap px-4 py-3 text-gray-900">{{ clientName(repair.client_id) }}</td>
+          <td class="whitespace-nowrap px-4 py-3 text-gray-700">{{ deviceName(repair.device_id) }}</td>
+          <td class="max-w-xs px-4 py-3 text-gray-700">{{ repair.issue_description }}</td>
+          <td class="px-4 py-3">
+            <select [value]="repair.status" (change)="updateStatus(repair, $any($event.target).value)" class="rounded border border-gray-300 px-2 py-1 text-xs">
+              <option *ngFor="let option of statuses" [value]="option">{{ option }}</option>
+            </select>
+          </td>
+          <td class="whitespace-nowrap px-4 py-3 text-gray-700">${{ (repair.estimated_cost || 0).toFixed(2) }}</td>
+          <td class="whitespace-nowrap px-4 py-3 text-gray-500">{{ repair.created_at | date:'mediumDate' }}</td>
+        </tr>
+        <tr *ngIf="filteredRepairs().length === 0">
+          <td colspan="7" class="px-4 py-10 text-center text-gray-500">No repair tickets match the selected filters.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-repair-form-modal
+  *ngIf="showCreateModal()"
+  (close)="closeModal()"
+  (submitted)="onRepairCreated()">
+</app-repair-form-modal>

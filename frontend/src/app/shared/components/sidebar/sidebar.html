@@ -27,6 +27,14 @@
                 <span class="sidebar-label" [class.visible]="expanded">Customers</span>
             </a>
         </li>
+        @if (canAccessRepairs()) {
+            <li class="sidebar-item">
+                <a routerLink="/repairs" class="sidebar-btn" title="Repairs">
+                    <lucide-icon name="wrench" class="sidebar-icon" aria-hidden="true"></lucide-icon>
+                    <span class="sidebar-label" [class.visible]="expanded">Repairs</span>
+                </a>
+            </li>
+        }
         <li class="sidebar-item">
             <a routerLink="/orders" class="sidebar-btn" title="Orders">
                 <lucide-icon name="box" class="sidebar-icon" aria-hidden="true"></lucide-icon>

@@ -8,11 +8,11 @@ const router = Router();
 // Gets all repairs
 router.get('/', repairController.getAllRepairs);
 
-// Gets a single repair by ID
-router.get('/:id', repairController.getRepairById);
-
 // Gets repairs for a specific client
 router.get('/by-client', repairController.getRepairsByClientId);
+
+// Gets a single repair by ID
+router.get('/:id', repairController.getRepairById);
 
 // Creates a new repair ticket
 router.post('/', repairController.createRepair);

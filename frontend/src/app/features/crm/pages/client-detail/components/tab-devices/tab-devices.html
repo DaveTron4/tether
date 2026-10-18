@@ -1,1 +1,67 @@
-<p>tab-devices works!</p>
+<div class="flex flex-col gap-6 p-6">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h2 class="text-lg font-bold text-gray-900">Device Garage</h2>
+      <p class="text-sm text-gray-500">Registered hardware for {{ client?.full_name }}</p>
+    </div>
+    <button type="button" (click)="openCreateModal()" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark">
+      + Register New Device
+    </button>
+  </div>
+
+  <div *ngIf="loading()" class="py-8 text-center text-gray-500">Loading devices...</div>
+  <div *ngIf="error()" class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">{{ error() }}</div>
+
+  <div *ngIf="!loading() && devices().length === 0" class="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-10 text-center">
+    <p class="text-gray-600">No devices registered for this customer.</p>
+    <button type="button" (click)="openCreateModal()" class="mt-4 text-sm font-medium text-primary hover:underline">Register the first device</button>
+  </div>
+
+  <div *ngIf="!loading() && devices().length > 0" class="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-gray-200 text-left text-sm">
+      <thead class="bg-gray-50">
+        <tr>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600">Type</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600">Manufacturer</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600">Model</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600">Color</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600">IMEI / Serial</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600">Device Passcode</th>
+          <th scope="col" class="px-4 py-3 text-right font-semibold text-gray-600">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <tr *ngFor="let device of devices()" class="hover:bg-gray-50">
+          <td class="whitespace-nowrap px-4 py-3 font-medium text-primary">{{ device.device_type || 'Device' }}</td>
+          <td class="whitespace-nowrap px-4 py-3 text-gray-900">{{ device.manufacturer || 'Not provided' }}</td>
+          <td class="whitespace-nowrap px-4 py-3 font-medium text-gray-900">{{ device.model }}</td>
+          <td class="whitespace-nowrap px-4 py-3 text-gray-700">{{ device.color || 'Not provided' }}</td>
+          <td class="max-w-48 break-all px-4 py-3 text-gray-700">{{ device.imei_serial || 'Not provided' }}</td>
+          <td class="whitespace-nowrap px-4 py-3 text-gray-700">{{ device.device_passcode || 'Not provided' }}</td>
+          <td class="whitespace-nowrap px-4 py-3 text-right">
+            <button type="button" (click)="openRepairModal(device)" class="mr-3 text-primary hover:underline">New Repair</button>
+            <button type="button" (click)="openEditModal(device)" class="mr-3 text-primary hover:underline">Edit</button>
+            <button type="button" (click)="deleteDevice(device)" class="text-red-600 hover:underline">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-device-form-modal
+  *ngIf="showDeviceModal() && client?.id"
+  [clientId]="client?.id ?? 0"
+  [mode]="selectedDevice() ? 'edit' : 'create'"
+  [device]="selectedDevice()"
+  (close)="closeModal()"
+  (submitted)="onDeviceSubmitted()">
+</app-device-form-modal>
+
+<app-repair-form-modal
+  *ngIf="showRepairModal() && client?.id && repairDevice()?.id"
+  [clientId]="client?.id ?? 0"
+  [deviceId]="repairDevice()?.id"
+  (close)="closeRepairModal()"
+  (submitted)="closeRepairModal()">
+</app-repair-form-modal>

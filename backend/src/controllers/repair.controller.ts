@@ -49,10 +49,6 @@ const getRepairsByClientId = async (req: AuthRequest, res: Response) => {
             [client_id, req.user.tenant_id]
         );
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'No repairs found for this client' });
-        }
-
         res.status(200).json(result.rows);
     } catch (err) {
         console.error('Error fetching repairs for client:', err);
